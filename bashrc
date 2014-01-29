@@ -102,7 +102,15 @@ fi
 if [ -f ~/.bash_variables ]; then
     . ~/.bash_variables
 fi 
+
+if [ -f ~/.bash_local_aliases ]; then
+    . ~/.bash_local_aliases
+fi
  
+if [ -f ~/.bash_local_variables ]; then
+    . ~/.bash_local_variables
+fi
+
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
