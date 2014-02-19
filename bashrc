@@ -111,6 +111,10 @@ if [ -f ~/.bash_local_variables ]; then
     . ~/.bash_local_variables
 fi
 
+if [ -d ~/bin ]; then
+	PATH="$PATH:~/bin"
+fi
+
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
