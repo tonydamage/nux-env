@@ -114,6 +114,10 @@ fi
 if [ -d ~/bin ]; then
 	PATH="$PATH:~/bin"
 fi
+# FIXME: Should autodetect folder based on location
+if [ -d ~/Environment/bin ]; then
+	PATH="$PATH:~/Environment/bin"
+fi
 if [ -d ~/.local/bin ]; then
     PATH="$PATH:~/.local/bin"
 fi

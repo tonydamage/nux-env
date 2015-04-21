@@ -1,0 +1,5 @@
+#!/bin/sh
+location=.
+file_pattern="*.java"
+
+find $location -iname "$file_pattern" | xargs grep -l "$1" | sort -u

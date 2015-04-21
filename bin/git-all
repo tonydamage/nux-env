@@ -1,0 +1,48 @@
+#!/bin/sh
+base_folder=`pwd`
+update_branch="master"
+method=$1
+shift
+echo $current_folder;
+
+## pull
+pull() {
+	if [ "$1" = "$update_branch" ]; then
+		echo "  Pulling latest changes"
+		git pull
+	else 
+		echo "  Skipping pull."
+	fi
+}
+
+## commit
+commit() {
+	echo "Doing Git Commit" $1 $2;
+	git commit -a -s -m "$2";
+}
+
+##  execute
+execute() {
+	shift;
+	eval "$*"; 
+
+}
+
+##
+shell() {
+	shift;
+	bash -i;
+}
+
+for git_repository in $(find $base_folder -iname ".git" -type d); do
+	repo_base=$(dirname "$git_repository")
+	cd "$repo_base"
+	echo Repository: $(basename $repo_base) 
+	echo "  Path:" $(pwd)
+	current_branch=$(git branch | grep "*" | cut -d" " -f2)
+	echo "  Branch: $current_branch"
+	echo "  Action: " $method
+	$method $current_branch "$*"
+
+done
+cd $base_folder
