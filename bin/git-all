@@ -23,14 +23,14 @@ commit() {
 
 ##  execute
 execute() {
-	shift;
+	shift; # Skip current branch
 	eval "$*"; 
 
 }
 
 ##
 shell() {
-	shift;
+	shift; # Skip current branch
 	bash -i;
 }
 
