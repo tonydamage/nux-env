@@ -1,6 +1,6 @@
 # Maven Aliases
 alias mci="mvn clean install"
-
+alias mvn-fastclean="find -name target -type d | xargs rm -rf"
 # GIT and GITK Aliases
 alias gitk-all="(git branch -l) | sed "s/^*//" | xargs gitk"
 
