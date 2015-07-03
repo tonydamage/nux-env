@@ -1,0 +1,6 @@
+.pmd
+.checkstyle
+.eclipse-pmd
+*~
+*.orig
+.externalToolBuilders
