@@ -115,8 +115,12 @@ if [ -d ~/bin ]; then
 	PATH="$PATH:~/bin"
 fi
 # FIXME: Should autodetect folder based on location
+# BACKWARDS: Deprecated name of folder
 if [ -d ~/Environment/bin ]; then
 	PATH="$PATH:~/Environment/bin"
+fi
+if [ -d ~/nux-env/bin ]; then
+        PATH="$PATH:~/nux-env/bin"
 fi
 if [ -d ~/.local/bin ]; then
     PATH="$PATH:~/.local/bin"
