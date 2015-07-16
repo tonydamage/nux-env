@@ -1,0 +1,3 @@
+#!/bin/sh
+## Extract keyframes from Nikon J1 MOV files
+ffmpeg -i *.MOV -vf "select=eq(pict_type\,I),setpts=N/(29.97*TB)" thumbnails-%02d.jpeg

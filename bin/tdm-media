@@ -1,0 +1,34 @@
+#!/system/bin/sh 
+
+function task.video.change.container {
+	CONTAINER=$1;
+	shift;
+	for video in "$@"; do 
+		echo "Starting processing Video: $video";
+		ffmpeg -i "$video" -vcodec copy -acodec copy "${video}.$CONTAINER"
+		echo "Processing done.";
+	done
+}
+
+function task.nikon-mp4 {
+	task.video.change.container mp4 "$@"
+}
+
+function task.downscale {
+	TARGET=$1
+	shift
+	SIZE=2048
+	for image in "$@"; do
+		target_file=$TARGET/$(basename $image)
+		echo "Downsampling image $image to $target_file"
+		convert $image \
+			-filter Lanczos -sampling-factor 1x1 \
+			-resize "${SIZE}x${SIZE}>" \
+			-quality 90 \
+			$target_file
+	done
+
+}
+TASK=$1
+shift
+task.$TASK "$@"
