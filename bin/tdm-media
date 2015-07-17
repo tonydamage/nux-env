@@ -1,11 +1,16 @@
-#!/system/bin/sh 
+#!/bin/bash
+
+
+type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
+type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
 
 function task.video.change.container {
 	CONTAINER=$1;
 	shift;
-	for video in "$@"; do 
+        echo "Using $FFMPEG_OR_LIBAV for conversion."
+	for video in "$@"; do
 		echo "Starting processing Video: $video";
-		ffmpeg -i "$video" -vcodec copy -acodec copy "${video}.$CONTAINER"
+		$FFMPEG_OR_LIBAV -i "$video" -vcodec copy -acodec copy "${video}.$CONTAINER"
 		echo "Processing done.";
 	done
 }
