@@ -1,0 +1,13 @@
+#!/bin/sh
+
+PORT=29418
+GERRIT=$1
+CURRENT_DIR=$(pwd)
+for p in $(ssh -p $PORT $GERRIT 'gerrit ls-projects')
+do
+echo "Checking out $p";
+mkdir $p;
+cd $p;
+git clone "ssh://$GERRIT:$PORT/$p" .
+cd $CURRENT_DIR;
+done
