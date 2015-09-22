@@ -1,5 +1,9 @@
 # Maven Aliases
 alias mci="mvn clean install"
+alias mci-ost="mvn clean install -o -DskipTests"
+alias mci-o="mvn clean install -o"
+alias mci-nsu="mvn clean install -nsu"
+
 alias mvn-fastclean="find -name target -type d | xargs rm -rf"
 alias m2-clean-snapshots="find ~/.m2/repository/ -name \"*-SNAPSHOT\" -type d | xargs -n10 rm -rf"
 # GIT and GITK Aliases
