@@ -3,7 +3,7 @@
 ##
 ## Creates cbz archive from supplied folder.
 ##
-
+SELF=$0
 FILENAME=$(basename $0)
 show_help() {
         echo $FILENAME
@@ -42,8 +42,9 @@ while getopts "hp:s:d" opt; do
 		    SUFFIX="$OPTARG";
 		    ;;
 		h)
-			show_help;exit 1;;
-		\?) show_help;exit 1;;
+			tdm-show-help $SELF;exit 1;;
+		\?)
+                        tdm-show-help $SELF;exit 1;;
 		:)	echo "Option -$OPTARG requires an argument." >&2 ; exit 1;;
 	esac
 done

@@ -143,3 +143,9 @@ PS1="$PS1\$(parse_git_branch)"
 ## Finalizing section
  
 PS1="$PS1\$ ";
+
+
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/tony/.sdkman"
+[[ -s "/home/tony/.sdkman/bin/sdkman-init.sh" ]] && source "/home/tony/.sdkman/bin/sdkman-init.sh"

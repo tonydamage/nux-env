@@ -1,0 +1,14 @@
+#!/bin/sh
+
+##
+## Creates cbz archive from supplied folder.
+##
+SCRIPT_PATH=$1
+FILENAME=$(basename $1)
+
+echo $FILENAME
+grep "\#\#" $1 | cut -d\# -f3-
+echo
+
+
+

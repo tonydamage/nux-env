@@ -1,0 +1,8 @@
+#!/bin/sh
+DATE_FORMAT="%Y-%m-%d %H:%M"
+NOTE_FILE=$1; 
+shift;
+
+# FIXME: Add possibility to specify note aliases & help
+
+echo $(date "+$DATE_FORMAT") $* ">> $NOTE_FILE";

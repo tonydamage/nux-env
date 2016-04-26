@@ -1,0 +1,31 @@
+#!/bin/sh
+ 
+# Source http://www.dib0.nl/code/524-add-todoist-item-from-the-commandline-in-linux-revised
+
+# check commandline arguments
+if [ $# -eq 0 ]
+then
+    echo "No arguments."
+    echo "Usage addtodoist.sh <Username (e-mail)> <Password> <Title to do item> <Date/time: optional> <Project ID: optional>"
+    exit 1
+fi
+ 
+# Login and get the token
+token=`wget -qO- --no-check-certificate  "https://api.todoist.com/API/login?email=$1&password=$2"|awk -F'api_token":"' '{print $2}'|awk -F'"' '{print $1}'`
+ 
+# Add the todo item
+url="https://api.todoist.com/API/addItem?token=$token&content=$3&priority=1"
+ 
+# Add the date if available
+if [ ! -z "$4" ]
+then
+    url=$url"&date_string=$4"
+fi
+ 
+# Add the project_id if available
+if [ ! -z "$5" ]
+then
+    url=$url"&project_id=$5"
+fi
+ 
+wget -qO- --no-check-certificate "$url" >/dev/null
