@@ -119,8 +119,10 @@ fi
 if [ -d ~/Environment/bin ]; then
 	PATH="$PATH:~/Environment/bin"
 fi
-if [ -d ~/nux-env/bin ]; then
+if [ -d ~/nux-env ]; then
         PATH="$PATH:~/nux-env/bin"
+        . ~/nux-env/bash_aliases
+        . ~/nux-env/bash_variables
 fi
 if [ -d ~/.local/bin ]; then
     PATH="$PATH:~/.local/bin"
