@@ -1,10 +1,11 @@
-# Reusable personal Linux Environment
+# Reusable Personal Linux Environment
 
-Virtualization brought us with custom-purpose Virtual Machines
-where each user / developer may have several machines for
-separate tasks and its became harder to synchronize
-development.
+
+Repository of own scripts / configuration which I find usefull
+to share across machines such as:
 
 * bashrc - Modified .bashrc which supports shared and local bash variables and aliases
 * bash_aliases - Common Bash Aliases
 * bash_variables
+
+
