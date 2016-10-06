@@ -92,7 +92,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
  
 
 
-# nux-env install path detection
+## nux-env install path detection
 NUX_ENV=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 
 # Alias definitions.
@@ -119,16 +119,14 @@ fi
 if [ -d ~/bin ]; then
 	PATH="$PATH:~/bin"
 fi
-# FIXME: Should autodetect folder based on location
-# BACKWARDS: Deprecated name of folder
-if [ -d ~/Environment/bin ]; then
-	PATH="$PATH:~/Environment/bin"
-fi
-if [ -d ~/nux-env ]; then
-        PATH="$PATH:~/nux-env/bin"
-        . ~/nux-env/bash_aliases
-        . ~/nux-env/bash_variables
-fi
+
+## Adds aliases and bin folder from NUX_ENV
+PATH="$PATH:$NUX_ENV/bin"
+. $NUX_ENV/bash_aliases
+. $NUX_ENV/bash_variables
+
+
+
 if [ -d ~/.local/bin ]; then
     PATH="$PATH:~/.local/bin"
 fi
