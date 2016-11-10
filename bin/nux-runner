@@ -1,0 +1,26 @@
+#!/bin/bash
+
+##
+##  help - Shows this help
+##
+task_help() {
+  SCRIPTNAME=$(basename $NUX_SCRIPT)
+  echo Usage $SCRIPTNAME [task] [options]
+
+  grep "^\#\#\#" $NUX_SCRIPT | cut -d\# -f4-
+
+  grep "^\#\# " $NUX_SCRIPT | cut -d\# -f3-
+
+	echo
+  echo "  help - Shows this help"
+  echo
+}
+
+task_() {
+  task_help
+}
+
+NUX_SCRIPT=$1; shift; # Determines script
+TASK=$1; shift; # Determines task
+source $NUX_SCRIPT; # Includes script
+task_$task "$*" # Runs task
