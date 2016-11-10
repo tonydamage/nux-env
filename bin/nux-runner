@@ -1,26 +1,69 @@
 #!/bin/bash
 
+###
+### nux-runner is environment runner for nux-env enhanced bash scripts
+### and provides out of the box support for task-style scripts
+### (similar in usage such as apt, git).
+###
+function is_function () {
+  declare -f "$1" &>/dev/null && return 0
+  return 1
+}
+
+log.debug() {
+  :
+}
+
+run_task() {
+  TASK=$1; shift; # Determines task
+  if is_function task_$TASK ; then
+    log.debug "Running task: $TASK";
+    task_$TASK "$*" # Runs task
+  else
+      log.debug "Including script: $NUX_SCRIPT"
+      source $NUX_SCRIPT; # Includes script
+
+      if is_function task_$TASK ; then
+        log.debug "Running task: $TASK";
+        task_$TASK "$*" # Runs task
+      else
+        echo "$SCRIPTNAME: Unrecognized task  ''$TASK' not available."
+        echo "Try '$SCRIPTNAME help' for more information."
+        exit -1
+      fi
+  fi
+}
+
 ##
+## Tasks provided by 'nux-runner':
+
+
+##  debug - Runs specified task with debug messages enabled.
+task_debug() {
+  log.debug() {
+    echo "[DEBUG] $*" >&2
+  }
+  run_task "$*"
+}
+
 ##  help - Shows this help
-##
 task_help() {
-  SCRIPTNAME=$(basename $NUX_SCRIPT)
-  echo Usage $SCRIPTNAME [task] [options]
-
+  echo Usage: $SCRIPTNAME [task] [options]
   grep "^\#\#\#" $NUX_SCRIPT | cut -d\# -f4-
-
+  echo " Available Tasks: "
   grep "^\#\# " $NUX_SCRIPT | cut -d\# -f3-
-
-	echo
-  echo "  help - Shows this help"
+  grep "^\#\#" $NUX_RUNNER | cut -d\# -f3-
   echo
 }
+
+##
 
 task_() {
   task_help
 }
 
+NUX_RUNNER=$0;
 NUX_SCRIPT=$1; shift; # Determines script
-TASK=$1; shift; # Determines task
-source $NUX_SCRIPT; # Includes script
-task_$task "$*" # Runs task
+SCRIPTNAME=$(basename $NUX_SCRIPT)
+
+run_task "$*"
