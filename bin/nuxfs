@@ -1,0 +1,192 @@
+#!/usr/bin/env nux-runner
+
+### Filesystem Layout manager
+###
+STARTDIR=$(pwd)
+function error {
+	echo -e "${NC_Error}$* ${NC_No}";
+}
+
+function warning {
+	echo -e "${NC_Warning}$* ${NC_No}";
+}
+
+function fs.relative {
+	echo "$(dir.get)/$1"
+	#realpath -Lms "$(pwd)/$1" --relative-to "$STARTDIR"
+}
+
+function fs.error {
+	local filename=$1; shift;
+	error "$filename"$NC_No:  $*;
+}
+
+function fs.warning {
+	local filename=$1; shift;
+	warning "$filename"$NC_No: $*;
+}
+
+
+function fs.info {
+	local filename=$1; shift;
+	echo -e $NC_White"$filename"$NC_No:  $*;
+}
+
+
+function dir.get {
+	echo ${DIR_ARRAY[${#DIR_ARRAY[@]}-1]}
+}
+
+function dir.pop {
+	unset DIR_ARRAY[${#DIR_ARRAY[@]}-1]
+}
+
+function dir.push {
+	value="$1"
+        DIR_ARRAY[${#DIR_ARRAY[@]}]="$value"
+}
+
+ROOT_DIR=$(pwd);
+declare -a DIR_ARRAY
+DIR_ARRAY[0]=.
+function exec.if.function {
+	FUNC_NAME=$1;
+	DEFAULT_NAME=$2;
+	shift; shift;
+
+	if is_function $FUNC_NAME; then
+		log.debug Executing: $FUNC_NAME "$@";
+		$FUNC_NAME "$@";
+		return;
+	fi
+	if is_function $DEFAULT_NAME; then
+		log.debug Executing: $FUNC_NAME "$@";
+		$DEFAULT_NAME "$@";
+		return;
+	fi
+
+
+}
+
+function dsl.fs.command {
+	CMD=$1;
+	localFile=$(fs.relative "$2");
+	shift; shift;
+
+	log.debug Processing $CMD "$localFile" $@;
+
+	exec.if.function $CMD-pre "$localFile" "$@";
+
+	log.debug Working file: $NC_White$localFile;
+	if dsl.file.exists "$localFile"; then
+		log.debug "File $localFile exits";
+		exec.if.function $CMD-exists def-exists "$localFile" "$@";
+	else
+		log.debug "File $localFile does not exists";
+		exec.if.function $CMD-notexists def-notexists "$localFile" "$@";
+  fi
+	exec.if.function $CMD-post def-post "$localFile" "$@";
+}
+
+dsl.file.exists() {
+	test -e "$1" -o -h "$1";
+}
+
+directory-verify() {
+	test -d "$1";
+}
+
+function origin {
+	:
+}
+
+
+dsl.execute() {
+	dir() {
+		dsl.fs.command directory "$@";
+	}
+
+	directory() {
+		dsl.fs.command directory "$@";
+	}
+
+	link() {
+		dsl.fs.command link "$@";
+		#log.debug ln -s "$ORIGIN/$1" "$VFS/$2" ;
+	}
+
+	git() {
+		dsl.fs.command git "$@";
+		#echo git clone $1 $2;
+	}
+
+	directory-post() {
+		dir.push "$1"
+		log.debug "Adding to dir stack: $1"		
+	}
+
+	directory-exists() {
+		if test  -d "$1"; then
+			log.debug "Directory exists '$1'"
+		else
+		  fs.error "$1" "is not directory."
+		fi
+	}
+	enddirectory() {
+		dir.pop
+	}
+	enddir() {
+		dir.pop
+	}
+  if test -f "$1"; then
+		source $1;
+	else
+		error "$1": Definition file does not exists.
+	fi
+}
+##  verify - Verifies that directory matches nuxfs specification
+function task.verify {
+	link-exists() {
+		log.debug "Testing '$1' as link"
+		if test ! -h "$1"; then
+			fs.error "$1" "is not symlink."
+			return
+		fi
+		local REAL_LINK=$(readlink "$1")
+		local TARGET="$2";
+		if test ! "$REAL_LINK" = "$TARGET"; then
+			fs.error "$1" "links to $REAL_LINK instead of $TARGET"
+			return
+		fi
+		if test ! -e "$1"; then
+			fs.warning "$1" target does not exists.
+		fi
+	}
+	def-notexists() {
+		fs.error "$1" "does not exists".
+	}
+	dsl.execute .nuxfs
+}
+
+
+function task.create {
+	directory-notexists() {
+		fs.info "$1" "Created directory";
+		mkdir -p "$1"
+
+	}
+
+	link-notexists() {
+		fs.info "$1" "Creating link to '$2'";
+		ln -s "$2" "$1"
+	}
+
+	git-notexists() {
+		log.warning "Not implemented";
+	}
+	
+	dsl.execute .nuxfs
+}
+
+
+
