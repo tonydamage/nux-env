@@ -10,7 +10,7 @@ nux.include nuxfs.dsl
 
 ##  verify - Verifies that directory matches nuxfs specification
 function task.verify {
-	link-exists() {
+	link.exists() {
 		nux.log debug  "Testing '$1' as link"
 		if test ! -h "$1"; then
 			nuxfs.error "$1" "is not symlink."
@@ -26,26 +26,26 @@ function task.verify {
 			nuxfs.warning "$1" "target '$NC_White$2$NC_No' does not exists."
 		fi
 	}
-	def-notexists() {
+	def.notexists() {
 		nuxfs.error "$1" "does not exists".
 	}
 	nuxfs.dsl.execute .nuxfs
 }
 
-## create - Creates missing files as described in nuxfs definition.
+##  create - Creates missing files as described in nuxfs definition.
 function task.create {
-	directory-notexists() {
+	directory.notexists() {
 		nuxfs.info "$1" "Created directory";
 		mkdir -p "$1"
 
 	}
 
-	link-notexists() {
+	link.notexists() {
 		nuxfs.info "$1" "Creating link to '$2'";
 		ln -s "$2" "$1"
 	}
 
-	git-notexists() {
+	git.notexists() {
 		log.warning "Not implemented";
 	}
 

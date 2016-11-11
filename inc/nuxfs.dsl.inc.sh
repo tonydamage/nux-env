@@ -25,17 +25,17 @@ function nuxfs.dsl.command {
 
 	nux.log debug  Processing $CMD "$localFile" $@;
 
-	exec.if.function $CMD-pre "$localFile" "$@";
+	exec.if.function $CMD.pre "$localFile" "$@";
 
 	nux.log debug  Working file: $NC_White$localFile;
 	if nuxfs.file.exists "$localFile"; then
 		nux.log debug  "File $localFile exits";
-		exec.if.function $CMD-exists def-exists "$localFile" "$@";
+		exec.if.function $CMD.exists def.exists "$localFile" "$@";
 	else
 		nux.log debug  "File $localFile does not exists";
-		exec.if.function $CMD-notexists def-notexists "$localFile" "$@";
+		exec.if.function $CMD.notexists def.notexists "$localFile" "$@";
   fi
-	exec.if.function $CMD-post def-post "$localFile" "$@";
+	exec.if.function $CMD.post def.post "$localFile" "$@";
 }
 
 
@@ -61,12 +61,12 @@ function nuxfs.dsl.keywords {
 		#echo git clone $1 $2;
 	}
 
-	directory-post() {
+	directory.post() {
 		nuxfs.dir.push "$1"
 		nux.log debug  "Adding to dir stack: $1"
 	}
 
-	directory-exists() {
+	directory.exists() {
 		if test  -d "$1"; then
 			nux.log debug  "Directory exists '$1'"
 		else
