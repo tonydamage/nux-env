@@ -1,0 +1,23 @@
+#!/usr/bin/env nux-runner
+### Portable *nix environment by tonydamage
+
+## status - Show status of nux-env installation
+task.status() {
+    echo nux-env folder: $NUX_ENV_DIR
+    pushd $NUX_ENV_DIR > /dev/null
+    git status
+    popd > /dev/null
+}
+
+## update - pulls latest nux-env from repository.
+task.update() {
+  pushd $NUX_ENV_DIR > /dev/null
+  git stash
+  git pull -r
+  git stash pop
+  popd > /dev/null
+}
+
+task.install() {
+  :
+}
