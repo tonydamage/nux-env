@@ -10,32 +10,8 @@ readonly NUX_RUNNER=$0;
 readonly NUX_RUNNER_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 source $NUX_RUNNER_BIN_DIR/../inc/nux-base.inc.sh
 
+nux.include nux-runner
 
-
-function is_function () {
-  declare -f "$1" &>/dev/null && return 0
-  return 1
-}
-
-runner.run() {
-  TASK=$1; shift; # Determines task
-  if is_function task.$TASK ; then
-    nux.log debug  "Running task: $TASK";
-    task.$TASK "$@" # Runs task
-  else
-      nux.log debug  "Including script: $NUX_SCRIPT"
-      source $NUX_SCRIPT; # Includes script
-
-      if is_function task.$TASK ; then
-        nux.log debug  "Running task: $TASK";
-        task.$TASK "$@" # Runs task
-      else
-        echo "$NUX_SCRIPTNAME: Unrecognized task  ''$TASK' not available."
-        echo "Try '$NUX_SCRIPTNAME help' for more information."
-        exit -1
-      fi
-  fi
-}
 ##
 ## Tasks provided by 'nux-runner':
 
@@ -43,14 +19,14 @@ runner.run() {
 ##  debug - Runs specified task with debug messages enabled.
 task.debug() {
   N_LOG_debug=1
-  runner.run "$@"
+  nux-runner.run "$@"
 }
 
 ##  trace - Runs specified task with debug & trace enabled.
 task.trace() {
   N_LOG_debug=1;
   N_LOG_trace=2;
-  runner.run "$@"
+  nux-runner.run "$@"
 }
 
 ##  help - Shows this help
@@ -73,4 +49,4 @@ readonly NUX_SCRIPT=$1;
 shift; # Determines script
 readonly NUX_SCRIPTNAME=$(basename $NUX_SCRIPT)
 
-runner.run "$@"
+nux-runner.run "$@"

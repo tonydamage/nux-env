@@ -54,3 +54,8 @@ function nux.include {
   local incfile="$1.inc.sh"
   source "$NUX_INC_DIR/$incfile"
 }
+
+function nux.check.function {
+  declare -f "$1" &>/dev/null && return 0
+  return 1
+}

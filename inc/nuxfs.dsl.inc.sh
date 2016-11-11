@@ -5,12 +5,12 @@ function exec.if.function {
 	DEFAULT_NAME=$2;
 	shift; shift;
 
-	if is_function $FUNC_NAME; then
+	if nux.check.function $FUNC_NAME; then
 		nux.log debug  Executing: $FUNC_NAME "$@";
 		$FUNC_NAME "$@";
 		return;
 	fi
-	if is_function $DEFAULT_NAME; then
+	if nux.check.function $DEFAULT_NAME; then
 		nux.log debug  Executing: $FUNC_NAME "$@";
 		$DEFAULT_NAME "$@";
 		return;
