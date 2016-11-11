@@ -1,5 +1,6 @@
 
 readonly NUX_INC_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
+readonly NUX_ENV_DIR=$(dirname $NUX_INC_DIR)
 
 # Color defintions
 
