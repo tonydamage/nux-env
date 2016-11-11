@@ -6,14 +6,9 @@
 ### (similar in usage such as apt, git).
 ###
 
-
-#    .---------- constant part!
-#    vvvv vvvv-- the code from above
-
-
 readonly NUX_RUNNER=$0;
 readonly NUX_RUNNER_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
-source $NUX_RUNNER_BIN_DIR/../inc/nux-base.sh
+source $NUX_RUNNER_BIN_DIR/../inc/nux-base.inc.sh
 
 
 
@@ -22,21 +17,17 @@ function is_function () {
   return 1
 }
 
-log.debug() {
-  :
-}
-
 runner.run() {
   TASK=$1; shift; # Determines task
   if is_function task.$TASK ; then
-    log.debug "Running task: $TASK";
+    nux.log debug  "Running task: $TASK";
     task.$TASK "$@" # Runs task
   else
-      log.debug "Including script: $NUX_SCRIPT"
+      nux.log debug  "Including script: $NUX_SCRIPT"
       source $NUX_SCRIPT; # Includes script
 
       if is_function task.$TASK ; then
-        log.debug "Running task: $TASK";
+        nux.log debug  "Running task: $TASK";
         task.$TASK "$@" # Runs task
       else
         echo "$NUX_SCRIPTNAME: Unrecognized task  ''$TASK' not available."
@@ -45,16 +36,20 @@ runner.run() {
       fi
   fi
 }
-
 ##
 ## Tasks provided by 'nux-runner':
 
 
 ##  debug - Runs specified task with debug messages enabled.
 task.debug() {
-  log.debug() {
-    echo -e "${NC_Debug}[DEBUG] $@ ${NC_No}" >&2
-  }
+  N_LOG_debug=1
+  runner.run "$@"
+}
+
+##  trace - Runs specified task with debug & trace enabled.
+task.trace() {
+  N_LOG_debug=1;
+  N_LOG_trace=2;
   runner.run "$@"
 }
 
