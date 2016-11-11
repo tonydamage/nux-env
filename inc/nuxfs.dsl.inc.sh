@@ -25,7 +25,7 @@ function nuxfs.dsl.command {
 
 	nux.log debug  Processing $CMD "$localFile" $@;
 
-	exec.if.function $CMD.pre "$localFile" "$@";
+	exec.if.function $CMD.pre def.pre "$localFile" "$@";
 
 	nux.log debug  Working file: $NC_White$localFile;
 	if nuxfs.file.exists "$localFile"; then
@@ -61,7 +61,7 @@ function nuxfs.dsl.keywords {
 		#echo git clone $1 $2;
 	}
 
-	directory.post() {
+	directory.pre() {
 		nuxfs.dir.push "$1"
 		nux.log debug  "Adding to dir stack: $1"
 	}
@@ -69,6 +69,10 @@ function nuxfs.dsl.keywords {
 	directory.exists() {
 		if test  -d "$1"; then
 			nux.log debug  "Directory exists '$1'"
+			nux.log trace  "Trying to nest into directory"
+			if test -e "$1/.nuxfs"; then
+				source "$1/.nuxfs";
+			fi;
 		else
 		  nuxfs.error "$1" "is not directory."
 		fi
