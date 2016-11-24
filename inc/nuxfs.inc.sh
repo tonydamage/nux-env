@@ -1,5 +1,3 @@
-
-
 function nuxfs.relative {
 	echo "$(nuxfs.dir.get)/$1"
 }

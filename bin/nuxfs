@@ -7,7 +7,7 @@ STARTDIR=$(pwd)
 nux.include nuxfs
 nux.include nuxfs.dsl
 
-
+GIT_BIN=$(which git)
 ##  verify - Verifies that directory matches nuxfs specification
 function task.verify {
 	link.exists() {
@@ -24,6 +24,18 @@ function task.verify {
 		fi
 		if test ! -e "$1"; then
 			nuxfs.warning "$1" "target '$NC_White$2$NC_No' does not exists."
+		fi
+	}
+	git.exists() {
+		nux.log debug "Testing '$1' as git repository"
+		if test ! -e "$1/.git"; then
+			nuxfs.error "$1" "is not git repository"
+			return
+		fi
+		local remotes=$(grep "$2" "$1/.git/config" | wc -l)
+		if [ $remotes -eq 0 ]; then
+			nuxfs.error "$1" "Does not refer git remote '$2'"
+			return;
 		fi
 	}
 	def.notexists() {
@@ -46,7 +58,11 @@ function task.create {
 	}
 
 	git.notexists() {
-		log.warning "Not implemented";
+		local cur_dir=$(nuxfs.dir.get);
+		local rel_path=$(realpath -Lms $1 --relative-to $cur_dir)
+		pushd $(nuxfs.dir.get) > /dev/null;
+		$GIT_BIN clone "$2" $rel_path
+		popd > /dev/null;
 	}
 
 	nuxfs.dsl.execute .nuxfs
