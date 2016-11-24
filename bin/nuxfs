@@ -22,8 +22,15 @@ function task.verify {
 		local REAL_LINK=$(readlink "$1")
 		local TARGET="$2";
 		if test ! "$REAL_LINK" = "$TARGET"; then
-			nuxfs.error "$1" "links to $REAL_LINK instead of $TARGET"
-			return
+			MAT_REAL=$(realpath "$REAL_LINK")
+			local cdir=$(dirname "$1")
+			MAT_TARGET=$(realpath "$cdir/$TARGET")
+			if test "$MAT_REAL" = "$MAT_TARGET"; then
+				nuxfs.warning "$1" "links to target '$2', but is using different definition."
+			else
+				nuxfs.error "$1" "links to $REAL_LINK instead of $TARGET"
+				return
+			fi
 		fi
 		if test ! -e "$1"; then
 			nuxfs.warning "$1" "target '$NC_White$2$NC_No' does not exists."
