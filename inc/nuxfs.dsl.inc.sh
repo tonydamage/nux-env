@@ -6,12 +6,12 @@ function exec.if.function {
 	shift; shift;
 
 	if nux.check.function $FUNC_NAME; then
-		nux.log debug  Executing: $FUNC_NAME "$@";
+		nux.log trace  Executing: $FUNC_NAME "$@";
 		$FUNC_NAME "$@";
 		return;
 	fi
 	if nux.check.function $DEFAULT_NAME; then
-		nux.log debug  Executing: $FUNC_NAME "$@";
+		nux.log trace  Executing: $FUNC_NAME "$@";
 		$DEFAULT_NAME "$@";
 		return;
 	fi
@@ -43,6 +43,9 @@ function nuxfs.dsl.keywords {
   origin() {
 		:
 	}
+	name() {
+		:
+	}
 	dir() {
 		nuxfs.dsl.command directory "$@";
 	}
@@ -71,6 +74,7 @@ function nuxfs.dsl.keywords {
 			nux.log debug  "Directory exists '$1'"
 			nux.log trace  "Trying to nest into directory"
 			if test -e "$1/.nuxfs"; then
+				nux.log debug "Invoking nested nuxfs definition."
 				source "$1/.nuxfs";
 			fi;
 		else
@@ -89,9 +93,9 @@ function nuxfs.dsl.execute {
   nuxfs.dsl.keywords
   declare -a DIR_ARRAY
   DIR_ARRAY[0]=.
-  if test -f "$1"; then
+  if test -e "$1"; then
 		source $1;
 	else
-		error "$1": Definition file does not exists.
+		nuxfs.error "$1"  Definition file does not exists.
 	fi
 }

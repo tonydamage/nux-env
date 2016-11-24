@@ -2,7 +2,10 @@
 
 ### Filesystem Layout manager
 ###
-STARTDIR=$(pwd)
+local STARTDIR=$(pwd)
+local TEMPLATE_DIR=$NUX_ENV_DIR/templates
+local SUFFIX=".nuxfs"
+local TEMPLATE_FILTER="*$SUFFIX"
 
 nux.include nuxfs
 nux.include nuxfs.dsl
@@ -65,5 +68,57 @@ function task.create {
 		popd > /dev/null;
 	}
 
-	nuxfs.dsl.execute .nuxfs
+	nuxfs.dsl.execute $SUFFIX
+}
+
+##  init - Initializes a directory using template
+function task.init {
+	if [ $# -eq 0 ]; then
+		nux.log debug "No template specified. Creating empty $SUFFIX definition."
+		touch .nuxfs
+		return;
+	fi
+	local TEMPLATE=$1
+	nux.log debug "User specified template is " $TEMPLATE
+	if [ $(echo $TEMPLATE | grep -c "$SUFFIX\$") -eq 0 ]; then
+		nux.log debug "Template is common template."
+		TEMPLATE=$TEMPLATE_DIR/$TEMPLATE$SUFFIX
+		if [ ! -e $TEMPLATE ]; then
+			echo -n "Template '$1' does not exists. "
+			nuxfs.template.list
+			return;
+		fi;
+
+	fi;
+	nux.log debug "Using '$TEMPLATE' to initialize."
+	if [ ! -e $TEMPLATE ]; then
+		echo "nuxfs template $1 does not exists."
+		return;
+	fi;
+  local template_relative=$(realpath -Lms $TEMPLATE --relative-to $(pwd))
+	nux.log debug "Creating link $SUFFIX:  target is '$template_relative'";
+	ln -s "$template_relative" "$SUFFIX"
+	nux.log debug "Invoking create task."
+	task.create
+}
+
+##
+##  template - List available templates
+#
+function task.template {
+	nux.log debug $NUX_ENV_DIR
+
+	nuxfs.template.list
+}
+
+function nuxfs.template.list {
+	echo "Available templates:";
+	pushd $TEMPLATE_DIR > /dev/null;
+  for i in $TEMPLATE_FILTER; do
+		local TEMPLATE_ID=$(basename $i $SUFFIX)
+		echo -n "  $TEMPLATE_ID - " ;
+		grep -m1 "^name " $i | sed -e "s/name *//"
+		echo
+	done;
+	popd > /dev/null;
 }
