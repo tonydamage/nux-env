@@ -26,7 +26,7 @@ function task.verify {
 			local cdir=$(dirname "$1")
 			MAT_TARGET=$(realpath "$cdir/$TARGET")
 			if test "$MAT_REAL" = "$MAT_TARGET"; then
-				nuxfs.warning "$1" "links to target '$2', but is using different definition."
+				nuxfs.warning "$1" "is using different definition for target '$2'"
 			else
 				nuxfs.error "$1" "links to $REAL_LINK instead of $TARGET"
 				return
@@ -51,7 +51,8 @@ function task.verify {
 	def.notexists() {
 		nuxfs.error "$1" "does not exists".
 	}
-	nuxfs.dsl.execute .nuxfs
+	nuxfs.initcfg
+	nuxfs.dsl.execute "$NUXFS_DEF" "$NUXFS_DEF_DIR" "$WORKDIR_ABSOLUTE"
 }
 
 ##  create - Creates missing files as described in nuxfs definition.
@@ -75,7 +76,8 @@ function task.create {
 		popd > /dev/null;
 	}
 
-	nuxfs.dsl.execute $SUFFIX
+	nuxfs.initcfg
+	nuxfs.dsl.execute "$NUXFS_DEF" "$NUXFS_DEF_DIR" "$WORKDIR_ABSOLUTE"
 }
 
 ##  init - Initializes a directory using template
@@ -128,4 +130,19 @@ function nuxfs.template.list {
 		echo
 	done;
 	popd > /dev/null;
+}
+
+
+function nuxfs.initcfg {
+
+	WORKDIR=$(pwd);
+	NUXFS_DEF=$(nuxfs.closest $SUFFIX);
+
+	if [ "$NUXFS_DEF" = "" ]; then
+		nuxfs.error $(pwd) "No nuxfs configuration found."
+		exit 1;
+	fi;
+	NUXFS_DEF_DIR=$(dirname $NUXFS_DEF);
+	WORKDIR_RELATIVE=$(realpath "$WORKDIR" --relative-to "$NUXFS_DEF_DIR")
+	WORKDIR_ABSOLUTE=$(realpath "$WORKDIR")
 }

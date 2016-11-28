@@ -33,3 +33,16 @@ function nuxfs.dir.push {
 function nuxfs.file.exists {
 	test -e "$1" -o -h "$1";
 }
+
+function nuxfs.closest {
+  cmd=$1;
+  cdir=$(pwd);
+	nux.log trace "Searching in: " $cdir;
+	until [ -e "$cdir/$1" -o "$cdir" == "/" ]; do
+		 cdir=$(dirname "$cdir");
+		 nux.log trace "Searching in: " $cdir;
+	 done;
+	 if [ -e "$cdir/$1" ]; then
+		 echo "$cdir/$1";
+	 fi
+}

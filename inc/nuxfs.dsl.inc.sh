@@ -21,20 +21,24 @@ function exec.if.function {
 function nuxfs.dsl.command {
 	CMD=$1;
 	localFile=$(nuxfs.relative "$2");
-	shift; shift;
 
-	nux.log debug  Processing $CMD "$localFile" $@;
+
+	shift; shift;
+	nux.log trace  Processing $CMD "$localFile" $@;
 
 	exec.if.function $CMD.pre def.pre "$localFile" "$@";
 
-	nux.log debug  Working file: $NC_White$localFile;
+	if [[ "$NESTED_DIR" = "$localFile"* ||  "$localFile" = "$NESTED_DIR"*  ]]; then
+		nux.log debug $localFile is affected by $NESTED_DIR;
+
 	if nuxfs.file.exists "$localFile"; then
-		nux.log debug  "File $localFile exits";
+		nux.log debug  "File $NC_White$localFile$NC_No exits";
 		exec.if.function $CMD.exists def.exists "$localFile" "$@";
 	else
-		nux.log debug  "File $localFile does not exists";
+		nux.log debug  "File $NC_White$localFile$NC_No does not exists";
 		exec.if.function $CMD.notexists def.notexists "$localFile" "$@";
   fi
+	fi
 	exec.if.function $CMD.post def.post "$localFile" "$@";
 }
 
@@ -91,11 +95,15 @@ function nuxfs.dsl.keywords {
 
 function nuxfs.dsl.execute {
   nuxfs.dsl.keywords
+	local DEF="$1";
+	local DIR="$2";
+	NESTED_DIR="$(realpath "$3")/";
+	nux.log debug "Working Directory: $DIR , Nested Directory: $NESTED_DIR"
   declare -a DIR_ARRAY
-  DIR_ARRAY[0]=.
-  if test -e "$1"; then
-		source $1;
+  DIR_ARRAY[0]=$DIR
+  if test -e "$DEF"; then
+		source "$DEF";
 	else
-		nuxfs.error "$1"  Definition file does not exists.
+		nuxfs.error "$DEF"  Definition file does not exists.
 	fi
 }
