@@ -11,8 +11,8 @@ nux.include nuxfs
 nux.include nuxfs.dsl
 
 GIT_BIN=$(which git)
-##  verify - Verifies that directory matches nuxfs specification
-function task.verify {
+##  check - Verifies that directory matches nuxfs specification
+function task.check {
 	link.exists() {
 		nux.log debug  "Testing '$1' as link"
 		if test ! -h "$1"; then
@@ -55,8 +55,8 @@ function task.verify {
 	nuxfs.dsl.execute "$NUXFS_DEF" "$NUXFS_DEF_DIR" "$WORKDIR_ABSOLUTE"
 }
 
-##  create - Creates missing files as described in nuxfs definition.
-function task.create {
+##  apply - Creates missing files as described in nuxfs definition.
+function task.apply {
 	directory.notexists() {
 		nuxfs.info "$1" "Created directory";
 		mkdir -p "$1"
@@ -120,6 +120,23 @@ function task.template {
 	nuxfs.template.list
 }
 
+function task.info {
+	nuxfs.initcfg;
+	if [ -n "$NUXFS_DEF" ]; then
+		MANAGED_RELATIVE=$(realpath $NUXFS_DEF_DIR --relative-to $(pwd));
+
+		if [ "$MANAGED_RELATIVE" = . ]; then
+			echo $(pwd) is nuxfs managed directory.
+		else
+			echo $(pwd) is child of nuxfs managed directory.
+			echo Managed directory is $NUXFS_DEF_DIR.
+		fi;
+  else
+		echo "$(pwd) is not managed by nuxfs";
+
+	fi;
+}
+
 function nuxfs.template.list {
 	echo "Available templates:";
 	pushd $TEMPLATE_DIR > /dev/null;
@@ -140,7 +157,7 @@ function nuxfs.initcfg {
 
 	if [ "$NUXFS_DEF" = "" ]; then
 		nuxfs.error $(pwd) "No nuxfs configuration found."
-		exit 1;
+		return;
 	fi;
 	NUXFS_DEF_DIR=$(dirname $NUXFS_DEF);
 	WORKDIR_RELATIVE=$(realpath "$WORKDIR" --relative-to "$NUXFS_DEF_DIR")
