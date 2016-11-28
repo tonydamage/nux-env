@@ -31,6 +31,10 @@ function nuxfs.dsl.command {
 	if [[ "$NESTED_DIR" = "$localFile"* ||  "$localFile" = "$NESTED_DIR"*  ]]; then
 		nux.log debug $localFile is affected by $NESTED_DIR;
 
+  if [[ "$NESTED_DIR" = "$localFile/" || "$localFile" = "$NESTED_DIR"* ]]; then
+		NUXFS_TARGET_FOUND=1;
+	fi
+
 	if nuxfs.file.exists "$localFile"; then
 		nux.log debug  "File $NC_White$localFile$NC_No exits";
 		exec.if.function $CMD.exists def.exists "$localFile" "$@";
@@ -102,7 +106,11 @@ function nuxfs.dsl.execute {
   declare -a DIR_ARRAY
   DIR_ARRAY[0]=$DIR
   if test -e "$DEF"; then
+		NUXFS_TARGET_FOUND=0;
 		source "$DEF";
+		if [ $NUXFS_TARGET_FOUND = 0 ]; then
+			nuxfs.warning "$3" "Does not have definition in $DEF";
+		fi
 	else
 		nuxfs.error "$DEF"  Definition file does not exists.
 	fi

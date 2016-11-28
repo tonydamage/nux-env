@@ -2,18 +2,22 @@ function nuxfs.relative {
 	echo "$(nuxfs.dir.get)/$1"
 }
 
+function nuxfs.relative-to-pwd {
+	realpath -s "$1" --relative-to "$(realpath "$(pwd)")"
+}
+
 function nuxfs.error {
-	local filename=$1; shift;
+	local filename=$(nuxfs.relative-to-pwd "$1"); shift;
 	nux.echo.error "$filename"$NC_No:  $*;
 }
 
 function nuxfs.warning {
-	local filename=$1; shift;
+	local filename=$(nuxfs.relative-to-pwd "$1"); shift;
 	nux.echo.warning "$filename"$NC_No: $*;
 }
 
 function nuxfs.info {
-	local filename=$1; shift;
+	local filename=$(nuxfs.relative-to-pwd "$1"); shift;
 	echo -e $NC_White"$filename"$NC_No:  $*;
 }
 
@@ -36,7 +40,7 @@ function nuxfs.file.exists {
 
 function nuxfs.closest {
   cmd=$1;
-  cdir=$(pwd);
+  cdir=$2;
 	nux.log trace "Searching in: " $cdir;
 	until [ -e "$cdir/$1" -o "$cdir" == "/" ]; do
 		 cdir=$(dirname "$cdir");

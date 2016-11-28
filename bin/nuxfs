@@ -51,7 +51,7 @@ function task.check {
 	def.notexists() {
 		nuxfs.error "$1" "does not exists".
 	}
-	nuxfs.initcfg
+	nuxfs.initcfg "$@"
 	nuxfs.dsl.execute "$NUXFS_DEF" "$NUXFS_DEF_DIR" "$WORKDIR_ABSOLUTE"
 }
 
@@ -76,7 +76,7 @@ function task.apply {
 		popd > /dev/null;
 	}
 
-	nuxfs.initcfg
+	nuxfs.initcfg "$@"
 	nuxfs.dsl.execute "$NUXFS_DEF" "$NUXFS_DEF_DIR" "$WORKDIR_ABSOLUTE"
 }
 
@@ -152,14 +152,23 @@ function nuxfs.template.list {
 
 function nuxfs.initcfg {
 
-	WORKDIR=$(pwd);
-	NUXFS_DEF=$(nuxfs.closest $SUFFIX);
+	WORKDIR=$1;
+	if [ -n "$WORKDIR" ]; then
+		WORKDIR=$WORKDIR
+  else
+		WORKDIR=$(pwd);
+	fi;
+
+	nux.log debug Target: $WORKDIR
+
+	NUXFS_DEF=$(nuxfs.closest $SUFFIX "$WORKDIR");
 
 	if [ "$NUXFS_DEF" = "" ]; then
 		nuxfs.error $(pwd) "No nuxfs configuration found."
 		return;
 	fi;
 	NUXFS_DEF_DIR=$(dirname $NUXFS_DEF);
-	WORKDIR_RELATIVE=$(realpath "$WORKDIR" --relative-to "$NUXFS_DEF_DIR")
-	WORKDIR_ABSOLUTE=$(realpath "$WORKDIR")
+	WORKDIR_RELATIVE=$(realpath -ms "$WORKDIR" --relative-to "$NUXFS_DEF_DIR")
+	WORKDIR_ABSOLUTE=$(realpath -ms "$WORKDIR")
+
 }
