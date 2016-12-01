@@ -6,9 +6,12 @@
 ### (similar in usage such as apt, git).
 ###
 
-readonly NUX_RUNNER=$0;
+
 readonly NUX_RUNNER_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 source $NUX_RUNNER_BIN_DIR/../inc/nux-base.inc.sh
+
+
+readonly NUX_RUNNER=$NUX_RUNNER_BIN_DIR/nux-runner;
 
 nux.include nux-runner
 
@@ -45,8 +48,16 @@ task.() {
   task.help
 }
 
-readonly NUX_SCRIPT=$1;
-shift; # Determines script
+if [ "$NUX_RUNNER" = "$0" ]
+then 
+	readonly NUX_SCRIPT=$1;
+	shift;
+else 
+	readonly NUX_SCRIPT=$0;
+	readonly NUX_NO_INCLUDE="no include";
+fi
+
+ # Determines script
 readonly NUX_SCRIPTNAME=$(basename $NUX_SCRIPT)
 
 nux-runner.run "$@"

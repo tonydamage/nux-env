@@ -2,13 +2,16 @@
 
 nux-runner.run() {
   TASK=$1; shift; # Determines task
-  if nux.check.function task.$TASK ; then
+  if nux.check.function task.$TASK 
+  then
     nux.log debug  "Running task: $TASK";
     task.$TASK "$@" # Runs task
   else
-      nux.log debug  "Including script: $NUX_SCRIPT"
-      source $NUX_SCRIPT; # Includes script
-
+      if [ -z "$NUX_NO_INCLUDE" ] 
+      then
+      	nux.log debug  "Including script: $NUX_SCRIPT"
+      	source $NUX_SCRIPT; # Includes script
+      fi
       if nux.check.function task.$TASK ; then
         nux.log debug  "Running task: $TASK";
         task.$TASK "$@" # Runs task
