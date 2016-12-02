@@ -101,7 +101,7 @@ function nuxfs.dsl.execute {
   nuxfs.dsl.keywords
 	local DEF="$1";
 	local DIR="$2";
-	NESTED_DIR="$(realpath "$3")/";
+	NESTED_DIR="$(realpath -s "$3")/";
 	nux.log debug "Working Directory: $DIR , Nested Directory: $NESTED_DIR"
   declare -a DIR_ARRAY
   DIR_ARRAY[0]=$DIR

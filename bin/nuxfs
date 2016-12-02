@@ -11,6 +11,7 @@ nux.include nuxfs
 nux.include nuxfs.dsl
 
 GIT_BIN=$(which git)
+
 ##  check - Verifies that directory matches nuxfs specification
 function task.check {
 	link.exists() {
@@ -135,6 +136,64 @@ function task.info {
 		echo "$(pwd) is not managed by nuxfs";
 
 	fi;
+}
+
+function nuxfs.dsl.capture.dir {
+  local CDIR=$1;
+	local LEVEL=$2;
+	nux.log debug "Inspecting directory $CDIR";
+
+	if [ -e "$RELATIVE/$SUFFIX" ]; then
+		return;
+	fi;
+
+	pushd "$CDIR" > /dev/null;
+	for file in ./* ; do
+		nuxfs.dsl.capture.file "$file" ".";
+	done;
+	popd > /dev/null;
+}
+
+function nuxfs.dsl.capture.file {
+	local file=$1;
+	local pdir=$2;
+	local RELATIVE=$(realpath -ms "$file" --relative-to "$pdir");
+	local ADDARGS="";
+	local TYPE="";
+	nux.log debug "Inspecting $file , Relative path is $RELATIVE";
+	if [ -h "$RELATIVE" ]; then
+		TYPE="link";
+		ADDARGS="\"$(readlink "$RELATIVE")\""
+	elif [ -d "$RELATIVE" -a -d "$RELATIVE/.git" ]; then
+		TYPE=git;
+		pushd "$RELATIVE" > /dev/null;
+		ADDARGS="\"$($GIT_BIN remote get-url origin)\""
+		popd  > /dev/null;
+	elif [ -d "$RELATIVE" ]; then
+		TYPE="dir";
+	fi;
+
+	if [ "$TYPE" ]; then
+		echo  -e "${LEVEL}$TYPE \"$RELATIVE\" $ADDARGS";
+	fi;
+
+	if [ "$TYPE" = "dir" -a "$LEVEL" != "      " ]; then
+		nuxfs.dsl.capture.dir "$RELATIVE" "${LEVEL}  "
+		echo "${LEVEL}enddir";
+	fi;
+}
+
+## capture - Captures current directory to nuxfs syntax
+function task.capture {
+	if [ $# -eq 0 ]; then
+		nuxfs.dsl.capture.dir .
+
+	else
+		for file in "$@" ; do
+			nuxfs.dsl.capture.file "$file" .;
+		done;
+	fi
+
 }
 
 function nuxfs.template.list {
