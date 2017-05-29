@@ -35,10 +35,13 @@ task.trace() {
 ##  help - Shows this help
 task.help() {
   echo Usage: $NUX_SCRIPTNAME [task] [options]
-  grep "^\#\#\# " $NUX_SCRIPT | cut -d\# -f4-
+  echo
+  grep "^\#\#\# " "$NUX_SCRIPT" | cut -d\# -f4-
+  echo
   echo " Available Tasks: "
-  grep "^\#\# " $NUX_SCRIPT | cut -d\# -f3-
-  grep "^\#\# " $NUX_RUNNER | cut -d\# -f3-
+  grep "^\#\# " "$NUX_SCRIPT" | cut -d\# -f3-
+  echo
+  grep "^\#\# " "$NUX_RUNNER" | cut -d\# -f3-
   echo
 }
 
@@ -49,15 +52,23 @@ task.() {
 }
 
 if [ "$NUX_RUNNER" = "$0" ]
-then 
+then
 	readonly NUX_SCRIPT=$1;
 	shift;
-else 
+else
 	readonly NUX_SCRIPT=$0;
 	readonly NUX_NO_INCLUDE="no include";
 fi
 
- # Determines script
-readonly NUX_SCRIPTNAME=$(basename $NUX_SCRIPT)
+if [ -n  "$NUX_SCRIPT" ]; then
+  # Determines script
+  readonly NUX_SCRIPTNAME=$(basename $NUX_SCRIPT)
 
-nux-runner.run "$@"
+  nux-runner.run "$@"
+
+else
+  echo  Usage: nux-runner [script] [task] [options]
+  echo
+  grep "^\#\#\# " "$NUX_RUNNER" | cut -d\# -f4-
+  echo
+fi
