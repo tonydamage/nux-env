@@ -57,6 +57,10 @@ function nuxfs.dsl.keywords {
 	dir() {
 		nuxfs.dsl.command directory "$@";
 	}
+	sdir() {
+		dir "$@"
+		enddir
+	}
 
 	directory() {
 		nuxfs.dsl.command directory "$@";
