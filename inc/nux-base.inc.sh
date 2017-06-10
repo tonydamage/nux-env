@@ -74,3 +74,15 @@ function nux.eval {
   nux.log trace Going to evaluate "$@"
   eval "$@"
 }
+
+function nux.exec.optional {
+  local FUNC="$1"; shift;
+  if nux.check.function $FUNC; then
+    nux.log trace  Executing optional: ${NC_White}${FUNC}${NC_No} "$@";
+    $FUNC "$@"
+  fi
+}
+
+function nux.dirty.urlencode {
+    echo -n "$1" | sed "s/ /%20/g"
+}

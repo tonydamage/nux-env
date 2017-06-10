@@ -55,17 +55,12 @@ function nux.dsl.keyword.exec {
   local ALLWAYS_NAME=.allways$func;
 
 	shift; shift;
-  if nux.check.function $ALLWAYS_NAME; then
-		nux.log trace  Executing: $NC_White$ALLWAYS_NAME$NC_No "$@";
-		$ALLWAYS_NAME "$@";
-  fi
+	nux.exec.optional $ALLWAYS_NAME "$@";
   if nux.check.function $FUNC_NAME; then
-		nux.log trace  Executing: $NC_White$FUNC_NAME$NC_No "$@";
-		$FUNC_NAME "$@";
+		nux.exec.optional $FUNC_NAME "$@";
 		return $?;
 	elif nux.check.function $DEFAULT_NAME; then
-		nux.log trace  Executing: $NC_White$DEFAULT_NAME$NC_No "$@";
-		$DEFAULT_NAME "$@";
+		nux.exec.optional $DEFAULT_NAME "$@";
 		return $?;
 	fi
 }
@@ -182,6 +177,20 @@ function nux.dsl.execute {
         $(.arg.parser "$@")
         nux.dsl.block.start $keyword \"\$@\";
         nux.dsl.block.end $keyword;
+      }
+    """
+  }
+
+  .macro() {
+    local keyword=$1
+    nux.log trace Defining macro $NC_White"$keyword"
+    nux.eval """
+      ${keyword}() {
+        $(.arg.parser "$@")
+        nux.exec.optional ${keyword}.entered \"\$@\"
+      }
+      end${keyword}() {
+        return 0;
       }
     """
   }
