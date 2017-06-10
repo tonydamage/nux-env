@@ -50,6 +50,11 @@ function nux.echo.warning {
 	echo -e "${NC_warning}$* ${NC_No}";
 }
 
+function nux.use {
+  local incfile="$1.inc.sh"
+  source "$NUX_INC_DIR/$incfile"
+}
+
 
 function nux.include {
   local incfile="$1.inc.sh"
@@ -59,4 +64,8 @@ function nux.include {
 function nux.check.function {
   declare -f "$1" &>/dev/null && return 0
   return 1
+}
+
+function nux.check.file.exists {
+	test -e "$1" -o -h "$1";
 }
