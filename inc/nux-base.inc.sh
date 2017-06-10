@@ -69,3 +69,8 @@ function nux.check.function {
 function nux.check.file.exists {
 	test -e "$1" -o -h "$1";
 }
+
+function nux.eval {
+  nux.log trace Going to evaluate "$@"
+  eval "$@"
+}

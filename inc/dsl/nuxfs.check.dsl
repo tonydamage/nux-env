@@ -7,21 +7,20 @@ link.entered() {
     return
   fi
   local REAL_LINK=$(readlink "$abs_path")
-  local TARGET="$3";
-  nux.log trace "Target is: $TARGET, real link: $REAL_LINK"
-  if test ! "$REAL_LINK" = "$TARGET"; then
+  nux.log trace "Target is: $target, real link: $REAL_LINK"
+  if test ! "$REAL_LINK" = "$target"; then
     MAT_REAL=$(realpath "$REAL_LINK")
     local cdir=$(dirname "$abs_path")
-    MAT_TARGET=$(realpath "$cdir/$TARGET")
+    MAT_TARGET=$(realpath "$cdir/$target")
     if test "$MAT_REAL" = "$MAT_TARGET"; then
       nuxfs.warning "$rel_path" "is using different definition for target '$3'"
     else
-      nuxfs.error "$rel_path" "links to $REAL_LINK instead of $TARGET"
+      nuxfs.error "$rel_path" "links to $REAL_LINK instead of $target"
       return
     fi
   fi
   if test ! -e "$abs_path"; then
-    nuxfs.warning "$rel_path" "target '$NC_White$TARGET$NC_No' does not exists."
+    nuxfs.warning "$rel_path" "target '$NC_White$target$NC_No' does not exists."
   fi
 }
 
@@ -31,9 +30,9 @@ git.entered() {
     nuxfs.error "$rel_path" "is not git repository"
     return
   fi
-  local remotes=$(grep "$3" "$rel_path/.git/config" | wc -l)
+  local remotes=$(grep "$origin" "$rel_path/.git/config" | wc -l)
   if [ $remotes -eq 0 ]; then
-    nuxfs.error "$rel_path" "Does not refer git remote '$3'"
+    nuxfs.error "$rel_path" "Does not refer git remote '$origin'"
     return;
   fi
 }

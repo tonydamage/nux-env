@@ -6,8 +6,8 @@ dir.check.recover() {
 }
 link.check.recover() {
   nuxfs.info "$rel_path" "Creating link to '$3'";
-  ln -s "$3" "$abs_path"
+  ln -s "$target" "$abs_path"
 }
 git.check.recover() {
-  $GIT_BIN clone "$3" "$abs_path"
+  $GIT_BIN clone "$origin" "$abs_path"
 }

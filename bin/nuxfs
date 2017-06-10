@@ -13,6 +13,7 @@ nux.use nuxfs
 
 GIT_BIN=$(which git)
 
+##  check - Verifies that directory matches nuxfs specification
 task.check() {
   nuxfs.dsl.process "$@";
 }
@@ -36,7 +37,8 @@ nuxfs.dsl.process() {
 		TARGET=$(pwd);
 	fi;
 
-	nux.log debug Target: $TARGET
+  TARGET=$(realpath -Lms "$TARGET")
+  nux.log debug Target: $TARGET
 
 	NUXFS_DEF=$(nuxfs.closest $SUFFIX "$TARGET");
 #
