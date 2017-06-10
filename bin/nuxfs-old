@@ -2,142 +2,83 @@
 
 ### Filesystem Layout manager
 ###
-local WORKDIR=$(pwd)
+local STARTDIR=$(pwd)
 local TEMPLATE_DIR=$NUX_ENV_DIR/templates
 local SUFFIX=".nuxfs"
 local TEMPLATE_FILTER="*$SUFFIX"
 
-nux.use nux.dsl
-nux.use nuxfs
+nux.include nuxfs
+nux.include nuxfs.dsl
 
 GIT_BIN=$(which git)
 
-nux.fs.dsl() {
-  .block dir
-  .keyword link
-  .keyword git
-  .keyword origin
-  .keyword name
-  .keyword template
-
-  sdir() {
-    dir "$@"
-    enddir
-  }
-
-  .preprocess() {
-    abs_path=$NUXFS_DEF_DIR/$path;
-    rel_path=$(realpath -m -s "$abs_path" --relative-base="$WORKDIR");
-  }
-
-  .check() {
-    nux.check.file.exists "$abs_path"
-  }
-
-  .check.failed() {
-    nux.dsl.error "$rel_path" does not exists.
-  }
-}
-
-task.check() {
-  link.entered() {
-    nux.log debug  "Testing '$rel_path' as link"
-		if test ! -h "$abs_path"; then
-			nuxfs.error "$rel_path" "is not symlink."
+##  check - Verifies that directory matches nuxfs specification
+function task.check {
+	link.exists() {
+		nux.log debug  "Testing '$1' as link"
+		if test ! -h "$1"; then
+			nuxfs.error "$1" "is not symlink."
 			return
 		fi
-		local REAL_LINK=$(readlink "$abs_path")
-		local TARGET="$3";
+		local REAL_LINK=$(readlink "$1")
+		local TARGET="$2";
 		if test ! "$REAL_LINK" = "$TARGET"; then
 			MAT_REAL=$(realpath "$REAL_LINK")
-			local cdir=$(dirname "$abs_path")
+			local cdir=$(dirname "$1")
 			MAT_TARGET=$(realpath "$cdir/$TARGET")
 			if test "$MAT_REAL" = "$MAT_TARGET"; then
-				nuxfs.warning "$rel_path" "is using different definition for target '$3'"
+				nuxfs.warning "$1" "is using different definition for target '$2'"
 			else
-				nuxfs.error "$rel_path" "links to $REAL_LINK instead of $TARGET"
+				nuxfs.error "$1" "links to $REAL_LINK instead of $TARGET"
 				return
 			fi
 		fi
 		if test ! -e "$1"; then
-			nuxfs.warning "$rel_path" "target '$NC_White$2$NC_No' does not exists."
+			nuxfs.warning "$1" "target '$NC_White$2$NC_No' does not exists."
 		fi
-  }
-  git.entered() {
-		nux.log debug "Testing '$rel_path' as git repository"
+	}
+	git.exists() {
+		nux.log debug "Testing '$1' as git repository"
 		if test ! -e "$1/.git"; then
-			nuxfs.error "$rel_path" "is not git repository"
+			nuxfs.error "$1" "is not git repository"
 			return
 		fi
-		local remotes=$(grep "$3" "$rel_path/.git/config" | wc -l)
+		local remotes=$(grep "$2" "$1/.git/config" | wc -l)
 		if [ $remotes -eq 0 ]; then
-			nuxfs.error "$rel_path" "Does not refer git remote '$3'"
+			nuxfs.error "$1" "Does not refer git remote '$2'"
 			return;
 		fi
 	}
-  process "$@";
+	def.notexists() {
+		nuxfs.error "$1" "does not exists".
+	}
+	nuxfs.initcfg "$@"
+	nuxfs.dsl.execute "$NUXFS_DEF" "$NUXFS_DEF_DIR" "$WORKDIR_ABSOLUTE"
 }
 
 ##  apply - Creates missing files as described in nuxfs definition.
-task.apply() {
-    dir.check.recover() {
-      nuxfs.info "$rel_path" "Created directory";
-      mkdir -p "$abs_path"
-    }
-    link.check.recover() {
-      nuxfs.info "$rel_path" "Creating link to '$3'";
-      ln -s "$3" "$abs_path"
-    }
-    git.check.recover() {
-      $GIT_BIN clone "$3" "$abs_path"
-    }
-  process "$@";
-}
+function task.apply {
+	directory.notexists() {
+		nuxfs.info "$1" "Created directory";
+		mkdir -p "$1"
 
-nux.dsl.load nux.fs.dsl
+	}
 
-process() {
-  WORKDIR=$(pwd);
-  TARGET=$1;
-	if [ -n "$TARGET" ]; then
-		TARGET=$TARGET
-  else
-		TARGET=$(pwd);
-	fi;
+	link.notexists() {
+		nuxfs.info "$1" "Creating link to '$2'";
+		ln -s "$2" "$1"
+	}
 
-	nux.log debug Target: $TARGET
+	git.notexists() {
+		local cur_dir=$(nuxfs.dir.get);
+		local rel_path=$(realpath -Lms $1 --relative-to $cur_dir)
+		pushd $(nuxfs.dir.get) > /dev/null;
+		$GIT_BIN clone "$2" $rel_path
+		popd > /dev/null;
+	}
 
-	NUXFS_DEF=$(nuxfs.closest $SUFFIX "$TARGET");
-#
-	if [ "$NUXFS_DEF" = "" ]; then
-		nuxfs.error $(pwd) "No nuxfs configuration found."
-		exit 1;
-	fi
-	NUXFS_DEF_DIR=$(dirname $NUXFS_DEF);
-	TARGET_RELATIVE=$(realpath -ms "$TARGET" --relative-to "$NUXFS_DEF_DIR")
-	TARGET_ABSOLUTE=$(realpath -ms "$TARGET")
-  if [ "$TARGET_RELATIVE" != . ]; then
-     if [[ $$TARGET_RELATIVE != ./* ]]; then
-      TARGET_RELATIVE="./$TARGET_RELATIVE"
-    fi
-    nux.dsl.only.subtree "$TARGET_RELATIVE"
-  fi
-
-  nux.log debug nuxfs definition: $NC_White$NUXFS_DEF$NC_No
-  nux.log debug $NC_White"target directory:$Nc_No"
-  nux.log debug "   relative to def:" $NC_White$TARGET_RELATIVE$NC_No
-  nux.log debug "   absoulte path:  " $NC_White$TARGET_ABSOLUTE$NC_No
-
-  if test -e "$NUXFS_DEF"; then
-  #    #NUXFS_TARGET_FOUND=0;
-    source "$NUXFS_DEF";
-
-  #    #if [ $NUXFS_TARGET_FOUND = 0 ]; then
-  #    #  nuxfs.warning "$3" "Does not have definition in $DEF";
-  #   fi
-  else
-    nuxfs.error "$NUXFS_DEF"  Definition file does not exists.
-  fi
+	nuxfs.initcfg "$@"
+	nuxfs.dsl.execute "$NUXFS_DEF" "$NUXFS_DEF_DIR" "$WORKDIR_ABSOLUTE"
 }
 
 ##  init - Initializes a directory using template
