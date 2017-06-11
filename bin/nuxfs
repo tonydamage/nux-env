@@ -1,7 +1,31 @@
 #!/usr/bin/env nux-runner
 
-### Filesystem Layout manager
+### # nuxfs - Filesystem layout manager
 ###
+### *nuxfs* command  uses file structure definition present in *.nuxfs* file
+### to understand intented state of directory / filesystem of user.
+###
+### This definition is not only used to create filesystem hierarchy, checkout
+### git repositories but also to verify state of filesystem afterwards.
+###
+### ## Example of .nuxfs file in home directory
+###
+###   *dir* github
+###     *git* nux-env https://github.com/tonydamage/nux-env.git
+###     *git* bats https://github.com/sstephenson/bats.git
+###   *enddir*
+###   *link* .bashrc github/nux-env/bashrc
+###
+### This *.nuxfs* file describes simple home structure. If we execute
+### **nuxfs apply** command, it will performs filesystem changes in order to
+### recreate structure described in *.nuxfs* file. In case of example it is
+### equivalent of executing:
+###     mkdir -p github
+###     git clone https://github.com/tonydamage/nux-env.git github/nux-env
+###     git clone https://github.com/sstephenson/bats.git
+###     ln -s github/nux-env/bashrc .bashrc
+###
+
 local WORKDIR=$(pwd)
 local TEMPLATE_DIR=$NUX_ENV_DIR/templates
 local SUFFIX=".nuxfs"
@@ -13,7 +37,9 @@ nux.use nuxfs
 
 GIT_BIN=$(which git)
 
-##  check - Verifies that directory matches nuxfs specification
+##   check   Verifies that directories and files matches the specification
+##           in *.nuxfs* definition
+##
 task.check() {
   nuxfs.dsl.process "$@";
 }
@@ -22,10 +48,25 @@ task.describe() {
   nuxfs.dsl.process "$@";
 }
 
-
-##  apply - Creates missing files as described in nuxfs definition.
+##   apply   Creates missing files as specified in *.nuxfs* definition.
+##           **DOES NOT MODIFY** existing files breaking specification.
+##
 task.apply() {
   nuxfs.dsl.process "$@";
+}
+
+##   fix     Performs apply and tries to fix warnings and errors and files as
+##           specified in nuxfs definition. This operation **DOES MODIFY**
+##           existing files.
+##
+task.fix() {
+  nuxfs.dsl.process "$@";
+}
+
+##   help.dsl   Displays help for **nuxfs DSL language**
+##
+task.help.dsl() {
+  nux.help.comment "$NUX_INC_DIR/dsl/nuxfs.dsl"
 }
 
 nuxfs.dsl.process() {
@@ -59,7 +100,7 @@ nuxfs.dsl.process() {
   nux.log debug nuxfs definition: $NC_White$NUXFS_DEF$NC_No
   nux.log debug $NC_White"target directory:$Nc_No"
   nux.log debug "   relative to def:" $NC_White$TARGET_RELATIVE$NC_No
-  nux.log debug "   absoulte path:  " $NC_White$TARGET_ABSOLUTE$NC_No
+  nux.log debug "   absolute path:  " $NC_White$TARGET_ABSOLUTE$NC_No
 
   if test -e "$NUXFS_DEF"; then
   #    #NUXFS_TARGET_FOUND=0;
@@ -73,7 +114,8 @@ nuxfs.dsl.process() {
   fi
 }
 
-##  init - Initializes a directory using template
+##   init    Initializes a directory using template
+##
 function task.init {
 	if [ $# -eq 0 ]; then
 		nux.log debug "No template specified. Creating empty $SUFFIX definition."
@@ -104,9 +146,8 @@ function task.init {
 	task.create
 }
 
+##   template - List available templates
 ##
-##  template - List available templates
-#
 function task.template {
 	nux.log debug $NUX_ENV_DIR
 	nuxfs.template.list
@@ -174,7 +215,7 @@ function nuxfs.dsl.capture.file {
 	fi;
 }
 
-## capture - Captures current directory to nuxfs syntax
+##  capture - Captures current directory to nuxfs syntax
 function task.capture {
 	if [ $# -eq 0 ]; then
 		nuxfs.dsl.capture.dir .

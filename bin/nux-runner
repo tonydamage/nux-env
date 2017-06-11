@@ -16,33 +16,32 @@ readonly NUX_RUNNER=$NUX_RUNNER_BIN_DIR/nux-runner;
 nux.include nux-runner
 
 ##
-## Tasks provided by 'nux-runner':
+## Commands provided by 'nux-runner':
 
 
-##  debug - Runs specified task with debug messages enabled.
+##   debug   Runs specified task with debug messages enabled.
 task.debug() {
   N_LOG_debug=1
   nux-runner.run "$@"
 }
 
-##  trace - Runs specified task with debug & trace enabled.
+##   trace   Runs specified task with debug & trace enabled.
 task.trace() {
   N_LOG_debug=1;
   N_LOG_trace=2;
   nux-runner.run "$@"
 }
 
-##  help - Shows this help
+##   help   Shows this help
 task.help() {
-  echo Usage: $NUX_SCRIPTNAME [task] [options]
+  echo Usage: $NC_Bold$NUX_SCRIPTNAME ${NC_No}${NC_White}\<command\>${NC_No} [\<options\>]
   echo
-  grep "^\#\#\# " "$NUX_SCRIPT" | cut -d\# -f4-
+  grep -E "^\#\#\#( |$)" "$NUX_SCRIPT" | cut -d\# -f4- | cut -d" " -f2- | nux.help.shelldoc
   echo
-  echo " Available Tasks: "
-  grep "^\#\# " "$NUX_SCRIPT" | cut -d\# -f3-
-  echo
-  grep "^\#\# " "$NUX_RUNNER" | cut -d\# -f3-
-  echo
+  echo "Available Commands: "
+  nux.help.comment "$NUX_SCRIPT"
+  nux.help.comment "$NUX_RUNNER"
+  nux.exec.optional task.help.detailed
 }
 
 ##
