@@ -1,3 +1,7 @@
+## #nux-base - NUX Script Base library
+##
+
+
 
 readonly NUX_INC_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 readonly NUX_ENV_DIR=$(dirname $NUX_INC_DIR)
@@ -43,24 +47,59 @@ readonly NC_LightPurple='\033[1;35m'
 readonly NC_LightCyan='\033[1;36m'
 readonly NC_White=$nc_white
 
+## #Public functions:
+##
+## ##Logging
+
 # Color for message levels
-NC_info=$NC_LightGray
-NC_error=$NC_LightRed
-NC_warning=$NC_Yellow
-NC_debug=$NC_White
+NC_LOG_color_info=$NC_LightGray
+NC_LOG_color_error=$NC_LightRed
+NC_LOG_color_warning=$NC_Yellow
+NC_LOG_color_debug=$NC_White
 
-N_LOG_info=1
-N_LOG_error=2
-N_LOG_warning=3
+NC_LOG_current=3
 
+NC_LOG_id_none=0
+NC_LOG_id_error=1
+NC_LOG_id_warning=2
+NC_LOG_id_info=3
+NC_LOG_id_debug=4
+NC_LOG_id_trace=5
+
+##
+## NUX Script environment provides basic logging capabilities.
+##
+## Currently there are 5 log levels supported (in order of detail):
+##   error
+##   warning
+##   info
+##   debug
+##   trace
+##
+##   nux.log <level> <message>
+##     Outputs log message to *STDERR*. LOG messages are filtered out based on
+##     level. Use *nux.log.level* to specify which messages should be displayed.
+##
+##
 function nux.log {
   local level=$1
-  local color=NC_$level
-  local setting=N_LOG_$level
+  local message=$2
+  local color=NC_LOG_color_$level
+  local level_num=NC_LOG_id_$level
   shift;
-  if [ ! -z ${!setting+x} ]; then
+  if [  ${!level_num} -le $NC_LOG_current  ]; then
     echo -e "${!color}[$level]$NC_No $*$NC_No" >&2
   fi
+}
+
+
+##   nux.log.level <level>
+##     Sets maximum level of details to be logged.
+##
+function  nux.log.level {
+  local level=$1
+  local level_id=NC_LOG_id_$level
+  NC_LOG_current=${!level_id}
 }
 
 function nux.echo.error {
@@ -71,22 +110,27 @@ function nux.echo.warning {
 	echo -e "${NC_warning}$* ${NC_No}";
 }
 
+##   nux.use <library>
+##
 function nux.use {
   local incfile="$1.inc.sh"
   source "$NUX_INC_DIR/$incfile"
 }
-
 
 function nux.include {
   local incfile="$1.inc.sh"
   source "$NUX_INC_DIR/$incfile"
 }
 
+##   nux.check.function <name>
+##
 function nux.check.function {
   declare -f "$1" &>/dev/null && return 0
   return 1
 }
 
+##   nux.check.file.exists <name>
+##
 function nux.check.file.exists {
 	test -e "$1" -o -h "$1";
 }
@@ -96,6 +140,8 @@ function nux.eval {
   eval "$@"
 }
 
+##   nux.exec.optional <name> [<arguments>]
+##
 function nux.exec.optional {
   local FUNC="$1"; shift;
   if nux.check.function $FUNC; then
