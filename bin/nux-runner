@@ -16,23 +16,22 @@ readonly NUX_RUNNER=$NUX_RUNNER_BIN_DIR/nux-runner;
 nux.include nux-runner
 
 ##
-## Commands provided by 'nux-runner':
+## Commands provided by *nux-runner*:
 
 
-##   debug   Runs specified task with debug messages enabled.
+##    debug   Runs specified task with debug messages enabled.
 task.debug() {
-  N_LOG_debug=1
+  nux.log.level debug
   nux-runner.run "$@"
 }
 
-##   trace   Runs specified task with debug & trace enabled.
+##    trace   Runs specified task with debug & trace enabled.
 task.trace() {
-  N_LOG_debug=1;
-  N_LOG_trace=2;
+  nux.log.level trace
   nux-runner.run "$@"
 }
 
-##   help   Shows this help
+##    help    Display this help
 task.help() {
   echo Usage: $NC_Bold$NUX_SCRIPTNAME ${NC_No}${NC_White}\<command\>${NC_No} [\<options\>]
   echo
@@ -50,7 +49,7 @@ task.() {
   task.help
 }
 
-if [ "$NUX_RUNNER" = "$0" ]
+if [ "$NUX_RUNNER" = "$(realpath "$0")" ]
 then
 	readonly NUX_SCRIPT=$1;
 	shift;
