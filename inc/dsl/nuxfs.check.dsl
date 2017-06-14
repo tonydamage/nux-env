@@ -36,3 +36,25 @@ git.entered() {
     return;
   fi
 }
+
+cathegorize.cathegories() {
+  nux.dsl.error Proposed cathegories: $NC_White$cathegories$NC_No
+  for cat in $cathegories; do
+    cat_dir=$parent_dir/$cat;
+    if [ ! -d "$cat_dir" ]; then
+      nux.dsl.error $cat_dir Does not exits. Required by $NC_White$@$NC_No
+    fi
+  done
+}
+
+cathegorize.files() {
+  (cd "$parent_dir"; find -maxdepth 1 -iname "$match") \
+    | while read file
+        do
+          file=$(basename "$file")
+          cathegory=$(echo $file | cathegorize.cathegory)
+          if [[ $cathegories =~ "$cathegory" ]];then
+            nux.dsl.error "$parent_dir/$file" Should be in $cathegory
+          fi
+        done
+}

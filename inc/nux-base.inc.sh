@@ -47,6 +47,7 @@ readonly NC_LightPurple='\033[1;35m'
 readonly NC_LightCyan='\033[1;36m'
 readonly NC_White=$nc_white
 
+readonly NC_error=$NC_Red
 ## #Public functions:
 ##
 ## ##Logging
@@ -103,11 +104,11 @@ function  nux.log.level {
 }
 
 function nux.echo.error {
-	echo -e "${NC_error}$* ${NC_No}";
+	echo "${NC_error}$* ${NC_No}";
 }
 
 function nux.echo.warning {
-	echo -e "${NC_warning}$* ${NC_No}";
+	echo -e "${NC_warning}"$@" ${NC_No}";
 }
 
 ##   nux.use <library>
@@ -115,6 +116,23 @@ function nux.echo.warning {
 function nux.use {
   local incfile="$1.inc.sh"
   source "$NUX_INC_DIR/$incfile"
+}
+
+function nux.fatal {
+  echo "$@";
+  exit -1;
+}
+
+##   nux.require <binary> [<common-package>]
+function nux.require {
+  local binary=$1;
+  local package=${2:-$1}
+  if nux.check.exec "$binary" ; then
+    :
+  else
+    nux.fatal $1 is not present. Please check if $package is installed.
+  fi
+
 }
 
 function nux.include {
@@ -127,6 +145,11 @@ function nux.include {
 function nux.check.function {
   declare -f "$1" &>/dev/null && return 0
   return 1
+}
+
+function nux.check.exec {
+  local binary=$1;
+  test -n "$(which "$binary")"
 }
 
 ##   nux.check.file.exists <name>
@@ -172,3 +195,7 @@ function nux.help.shelldoc {
     -e "s/\*([^*]*)\*/${NC_White}\1${NC_No}/gI"  \
 
 }
+
+NUX_ENV_MACHINE=/usr/
+NUX_ENV_MACHINE_LOCAL=/usr/local/
+NUX_ENV_USER_LOCAL=$HOME/.local

@@ -66,6 +66,61 @@
 ##
 .keyword should-not-exists
 
+.keyword cathegorize match min delimiter
+cathegorize.check() {
+  test $(find "$(dirname "$abs_path")" -maxdepth 1 -iname "$match" | wc -l) -gt 0
+}
+
+cathegorize.cathegory() {
+  sed -r -e "s/$delimiter/:/g" | cut -d: -f1
+}
+cathegorize.entered() {
+  local parent_dir=$(dirname "$rel_path");
+  local cathegories=$((cd "$parent_dir"; find -maxdepth 1 -iname "$match") \
+    | cut -d"/" -f2 \
+    | cathegorize.cathegory | sort | uniq -c \
+    | while IFS=" " read count cathegory
+        do
+          if [ $count -ge $min ]; then
+            echo $theme $cathegory
+          fi
+        done
+    )
+
+  for cat in $cathegories; do
+    cat_dir=$parent_dir/$cat;
+    if [ ! -d "$cat_dir" ]; then
+      cathegorize.process.dir "$@"
+    fi
+  done
+
+  (cd "$parent_dir"; find -maxdepth 1 -iname "$match") \
+    | while read file
+        do
+          file=$(basename "$file")
+          cathegory=$(echo $file | cathegorize.cathegory)
+
+          if [[ $cathegories =~ "$cathegory" ]];then
+            rel_file=$parent_dir/$file
+            cat_dir=$parent_dir/$cathegory
+            cathegorize.process.file "$@"
+          fi
+        done
+
+}
+
+cathegorize.process.dir() {
+  nux.dsl.error "$cat_dir" Does not exits. Required by cathegorize
+}
+
+cathegorize.process.file() {
+  nux.dsl.error "$rel_file" Should be in $NC_White$cat_dir$NC_No
+}
+
+cathegorize.check.failed() {
+  nux.log debug Noop, no files to cathegorize
+}
+
 directory() {
   dir
 }

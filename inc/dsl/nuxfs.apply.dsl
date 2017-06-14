@@ -11,3 +11,8 @@ link.check.recover() {
 git.check.recover() {
   $GIT_BIN clone "$origin" "$abs_path"
 }
+
+cathegorize.process.dir() {
+  mkdir -p "$cat_dir"
+  nux.dsl.info "$cat_dir" Created directory
+}

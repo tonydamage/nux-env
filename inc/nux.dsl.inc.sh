@@ -1,3 +1,5 @@
+## nux.dsl - NUX Script DSL Support Library
+
 function nux.dsl.block.type {
   echo ${DSL_BLOCK_TYPE[${#DSL_BLOCK_TYPE[@]}-1]}
 }
