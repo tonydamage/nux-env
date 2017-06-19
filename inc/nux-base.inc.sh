@@ -1,7 +1,4 @@
 ## #nux-base - NUX Script Base library
-##
-
-
 
 readonly NUX_INC_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 readonly NUX_ENV_DIR=$(dirname $NUX_INC_DIR)
@@ -193,6 +190,13 @@ function nux.help.shelldoc {
     -e "s/^   ?[a-z0-9.-_]*/${NC_Bold}&${NC_No}/gI" \
     -e "s/\*\*([^*]*)\*\*/${NC_Bold}\1${NC_No}/gI"  \
     -e "s/\*([^*]*)\*/${NC_White}\1${NC_No}/gI"  \
+
+}
+
+function nux.url.parse {
+  format=${2:-"protocol:\2\nuser:\4\nhost:\5\nport:\7 \npath:\8"}
+  echo "$1" | sed \
+    -re "s/(([^:\/]*):\/\/)?(([^@\/:]*)@)?([^:\/]+)(:([0-9]+))?(\/(.*))?/$format/g"
 
 }
 

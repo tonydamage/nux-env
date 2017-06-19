@@ -18,6 +18,17 @@ task.update() {
   popd > /dev/null
 }
 
+##  install Install nux-env recommended binaries if not present
+##
 task.install() {
   :
+
+}
+
+##  help.inc <inc>
+##     Displays help for specified nuxs-env library.
+##
+task.help.inc() {
+  local name="$1"
+  nux.help.comment $NUX_INC_DIR/$name.inc.sh
 }

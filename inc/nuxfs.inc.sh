@@ -40,7 +40,7 @@ function nuxfs.file.exists {
 
 function nuxfs.closest {
   cmd=$1;
-  cdir=$2;
+  cdir=${2:-$(pwd)};
 	nux.log trace "Searching in: " $cdir;
 	until [ -e "$cdir/$1" -o "$cdir" == "/" ]; do
 		 cdir=$(dirname "$cdir");
