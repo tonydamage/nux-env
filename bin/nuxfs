@@ -134,9 +134,9 @@ function task.init {
 	nux.log debug "User specified template is " $TEMPLATE
 	if [ $(echo $TEMPLATE | grep -c "$SUFFIX\$") -eq 0 ]; then
 		nux.log debug "Template is common template."
-		TEMPLATE=$TEMPLATE_DIR/$TEMPLATE$SUFFIX
-		if [ ! -e $TEMPLATE ]; then
-			echo -n "Template '$1' does not exists. "
+		TEMPLATE=$(nux.cfg.get.path --first templates/${TEMPLATE}${SUFFIX})
+		if [ -z $TEMPLATE ]; then
+			echo "Template '$1' does not exists. "
 			nuxfs.template.list
 			return;
 		fi;
@@ -150,8 +150,8 @@ function task.init {
   local template_relative=$(realpath -Lms $TEMPLATE --relative-to $(pwd))
 	nux.log debug "Creating link $SUFFIX:  target is '$template_relative'";
 	ln -s "$template_relative" "$SUFFIX"
-	nux.log debug "Invoking create task."
-	task.create
+	nux.log debug "Invoking apply task."
+	nuxr.run apply
 }
 
 ##   template - List available templates
@@ -237,15 +237,11 @@ function task.capture {
 }
 
 function nuxfs.template.list {
-	echo "Available templates:";
-	pushd $TEMPLATE_DIR > /dev/null;
-  for i in $TEMPLATE_FILTER; do
-		local TEMPLATE_ID=$(basename $i $SUFFIX)
-		echo -n "  $TEMPLATE_ID - " ;
-		grep -m1 "^name " $i | sed -e "s/name *//"
-		echo
-	done;
-	popd > /dev/null;
+  nux.log trace "Templates folders are: $(nux.cfg.get.path templates)"
+  for _dir in $(nux.cfg.get.path templates) ; do
+    find $_dir -maxdepth 1 -iname "*.nuxfs"
+  done | xargs -n1 basename --suffix $SUFFIX | sort | uniq
+
 }
 
 

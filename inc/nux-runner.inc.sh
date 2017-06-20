@@ -29,7 +29,7 @@ function nuxr.task.help {
   else
     nuxr.help.task.comment "$NUX_SCRIPT" "$command" \
       || nuxr.help.task.comment "$NUX_RUNNER" "$command" \
-      || echo "Help topic $1 not found. Run $0 help to see topics."
+      || echo "Help topic $1 not found. Run '$NUX_APPNAME help'  to see topics."
   fi
 }
 

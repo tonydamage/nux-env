@@ -38,11 +38,10 @@
 
 readonly NUX_RUNNER_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 source $NUX_RUNNER_BIN_DIR/../inc/nux-base.inc.sh
-
-
 readonly NUX_RUNNER=$NUX_RUNNER_BIN_DIR/nux-runner;
 
-nux.include nux-runner
+nux.use nux-runner
+nux.use nux.cfg
 
 ##
 ## Additional commands provided by *nux-runner*:
@@ -90,7 +89,15 @@ task.help() {
 ###         local, global, dist
 ###
 task.config() {
-  nux.notimplemented task.config
+  nux.log trace "global is" $(nux.cfg.dir.global)
+  nux.log trace "dist is" $(nux.cfg.dir.dist)
+  nux.log trace "local is" $(nux.cfg.dir.local)
+
+  if [ "$#" -ge 3 ] ; then
+    nux.cfg.write "$@"
+  else
+    nux.cfg.read "$@";
+  fi
 }
 
 task.() {
