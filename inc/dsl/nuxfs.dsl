@@ -39,6 +39,11 @@
 ##        unless **enddir** keyword is encountered.
 ##
 .block dir name
+dir.entered() {
+  if nux.check.file.exists "$abs_path/.nuxfs"; then
+    source "$abs_path/.nuxfs"
+  fi
+}
 
 ##   link <name> <target>
 ##        Defines a symbolik link with specified *name*, which points to
@@ -63,8 +68,24 @@
 ##
 .keyword exists name
 
+##   should-not-exists <match>
+##        Defines a requirement for file not to be present.
+##        *nuxfs check*: error will be raised if file exists.
+##        *nuxfs fix*: files which match the match will be deleted.
 ##
-.keyword should-not-exists
+##
+.keyword should-not-exists match
+should-not-exists.check() {
+  test $(find "$(dirname "$abs_path")" -maxdepth 1 -iname "$match" | wc -l) -eq 0
+}
+
+should-not-exists.check.failed() {
+  find "$(dirname "$rel_path")" -maxdepth 1 -iname "$match" | while read f
+      do
+        nux.dsl.error $f Should not exists, but is present.
+      done
+}
+
 
 .keyword cathegorize match min delimiter
 cathegorize.check() {
@@ -129,6 +150,7 @@ sdir() {
   dir "$@"
   enddir
 }
+
 ##
 ## #Using custom keywords
 ##
@@ -182,23 +204,4 @@ sdir() {
   if [ -z "$NUXFS_IGNORE_MISSING" ]; then
     .error does not exists.
   fi
-}
-dir.entered() {
-  if nux.check.file.exists "$abs_path/.nuxfs"; then
-    source "$abs_path/.nuxfs"
-  fi
-}
-
-should-not-exists.check() {
-  nux.log trace "Checking existence of $NC_White$abs_path$NC_No"
-  if nux.check.file.exists "$abs_path"; then
-    return 1
-  fi
-  return 0
-}
-
-should-not-exists.check.failed() {
-  for f in "$rel_path"; do
-    nux.dsl.error $f Should not exists, but is present.
-  done
 }

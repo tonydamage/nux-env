@@ -10,10 +10,14 @@ function nux.cfg.include {
 }
 
 ##
-##   nux.cfg.global.path [<path>]
+##   nux.cfg.global.path
 ##       Returns global path., otherwise provides specified.
 ##
-function nux.cfg.global.path {
+function nux.cfg.global.dir {
+  :
+}
+
+function nux.cfg.dist.dir
   :
 }
 

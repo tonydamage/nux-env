@@ -1,10 +1,7 @@
 .use-dsl nuxfs.apply
 
 should-not-exists.check.failed() {
-for f in "$rel_path"; do
-  rm -r "$f"
-  nux.dsl.info $f Deleted.
-done
+  find "$(dirname "$rel_path")" -maxdepth 1 -iname "$id" -delete
 }
 
 cathegorize.process.file() {

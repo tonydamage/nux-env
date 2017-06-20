@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
 

@@ -1,9 +1,38 @@
 #!/bin/bash
 
 ###
-### nux-runner is environment runner for nux-env enhanced bash scripts
-### and provides out of the box support for task-style scripts
-### (similar in usage such as apt, git).
+### *nux-runner* is wrapped bash interpreter for *nux-env* enhanced bash scripts
+### and provides out of the box support for command-style scripts (similar in
+### usage such as apt, git) with following features out of the box:
+###
+###   task selection::
+###        Automaticly selects correct tasks, displays help if
+###        task does not exists.
+###   logging::
+###        Using *nux.log* function and changing output using
+###       *debug*, *trace* prefixes
+###   help display::
+###        Automated help display when no arguments are provided.
+###        Uses source comments as source for help.
+###
+###
+### # Writing nux-runner scripts
+###
+### *nux-runner* scripts are basicly bash scripts with some additional conventions.
+###
+###
+###
+###
+###
+### 1. Shebang::
+###    Shebang (*#!*) at the start of file is *#!/usr/bin/env nux-runner*
+### 2. Tasks::
+###    Script usually does only defines functions in form task.{taskname}
+###    where taskname
+### ## Defining a task
+###
+###
+###
 ###
 
 
@@ -16,38 +45,60 @@ readonly NUX_RUNNER=$NUX_RUNNER_BIN_DIR/nux-runner;
 nux.include nux-runner
 
 ##
-## Commands provided by *nux-runner*:
-
-
-##    debug   Runs specified task with debug messages enabled.
-task.debug() {
-  nux.log.level debug
-  nux-runner.run "$@"
-}
-
-##    trace   Runs specified task with debug & trace enabled.
-task.trace() {
-  nux.log.level trace
-  nux-runner.run "$@"
-}
-
-##    help    Display this help
-task.help() {
-  echo Usage: $NC_Bold$NUX_SCRIPTNAME ${NC_No}${NC_White}\<command\>${NC_No} [\<options\>]
-  echo
-  grep -E "^\#\#\#( |$)" "$NUX_SCRIPT" | cut -d\# -f4- | cut -d" " -f2- | nux.help.shelldoc
-  echo
-  echo "Available Commands: "
-  nux.help.comment "$NUX_SCRIPT"
-  nux.help.comment "$NUX_RUNNER"
-  nux.exec.optional task.help.detailed
-}
+## Additional commands provided by *nux-runner*:
+### *nux-runner* automaticly provides following tasks to any script it executes:
 
 ##
+
+
+
+##    debug:: <task> [<task arguments>]
+##      Runs specified task with debug messages enabled.
+task.debug() {
+  nux.log.level debug
+  nuxr.run "$@"
+}
+
+##    trace:: <task> [<task arguments>]
+##      Runs specified task with debug & trace enabled.
+task.trace() {
+  nux.log.level trace
+  nuxr.run "$@"
+}
+
+##    help:: [command]
+##      Display help for command or topic if specified. Otherwise displays
+##      documentation.
+task.help() {
+  nuxr.task.help "$@"
+}
+
+##    config:: [type] name [value]
+##      Reads or writes application specific configuration option.
+###
+###     There are 3 *types* of configuration:
+###       dist::
+###         Distribution provided configuration. Read-only configuration.
+###       global::
+###         Global (user-specific) provided configuration. This configuration is
+###         usually stored in *~/.config/{app-name}/config.yml*
+###       local::
+###         Local configuration.
+###
+###     The resulting application configuration is merger of these three (if available)
+###     with following preference (most-specific one):
+###         local, global, dist
+###
+task.config() {
+  nux.notimplemented task.config
+}
 
 task.() {
   task.help
 }
+
+###
+###
 
 if [ "$NUX_RUNNER" = "$(realpath "$0")" ]
 then
@@ -61,12 +112,13 @@ fi
 if [ -n  "$NUX_SCRIPT" ]; then
   # Determines script
   readonly NUX_SCRIPTNAME=$(basename $NUX_SCRIPT)
-
-  nux-runner.run "$@"
+  readonly NUX_APPNAME=$(basename $NUX_SCRIPT)
+  nuxr.run "$@"
 
 else
+
   echo  Usage: nux-runner [script] [task] [options]
   echo
-  grep "^\#\#\# " "$NUX_RUNNER" | cut -d\# -f4-
+  grep "^\#\#" "$NUX_RUNNER" | sed -re "s/^#+ ?(.*)/\1/gi"  | nux.help.shelldoc
   echo
 fi

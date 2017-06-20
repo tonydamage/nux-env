@@ -74,7 +74,7 @@ NC_LOG_id_trace=5
 ##   debug
 ##   trace
 ##
-##   nux.log <level> <message>
+## nux.log:: <level> <message>
 ##     Outputs log message to *STDERR*. LOG messages are filtered out based on
 ##     level. Use *nux.log.level* to specify which messages should be displayed.
 ##
@@ -91,7 +91,7 @@ function nux.log {
 }
 
 
-##   nux.log.level <level>
+## nux.log.level:: <level>
 ##     Sets maximum level of details to be logged.
 ##
 function  nux.log.level {
@@ -108,8 +108,7 @@ function nux.echo.warning {
 	echo -e "${NC_warning}"$@" ${NC_No}";
 }
 
-##   nux.use <library>
-##
+## nux.use:: <library>
 function nux.use {
   local incfile="$1.inc.sh"
   source "$NUX_INC_DIR/$incfile"
@@ -120,7 +119,12 @@ function nux.fatal {
   exit -1;
 }
 
-##   nux.require <binary> [<common-package>]
+## nux.notimplemented:: <feature-id>
+function nux.notimplemented {
+  nux.fatal "$@: is not imlemented."
+}
+
+## nux.require:: <binary> [<common-package>]
 function nux.require {
   local binary=$1;
   local package=${2:-$1}
@@ -137,9 +141,10 @@ function nux.include {
   source "$NUX_INC_DIR/$incfile"
 }
 
-##   nux.check.function <name>
+## nux.check.function:: <name>
 ##
 function nux.check.function {
+  nux.log trace "Checking if $1 is function."
   declare -f "$1" &>/dev/null && return 0
   return 1
 }
@@ -149,7 +154,7 @@ function nux.check.exec {
   test -n "$(which "$binary")"
 }
 
-##   nux.check.file.exists <name>
+## nux.check.file.exists:: <name>
 ##
 function nux.check.file.exists {
 	test -e "$1" -o -h "$1";
@@ -160,7 +165,7 @@ function nux.eval {
   eval "$@"
 }
 
-##   nux.exec.optional <name> [<arguments>]
+## nux.exec.optional:: <name> [<arguments>]
 ##
 function nux.exec.optional {
   local FUNC="$1"; shift;
@@ -176,21 +181,22 @@ function nux.dirty.urlencode {
 
 function nux.help.comment {
   local source="$1"
-  grep -E "^\#\#( |$)" "$source" \
-    | cut -d\# -f3- \
-    | cut -d" " -f2- \
-    | nux.help.shelldoc
-
+  if nux.check.file.exists "$source" ; then
+    grep -E "^\#\#( |$)" "$source" \
+      | cut -d\# -f3- \
+      | cut -d" " -f2- \
+      | nux.help.shelldoc
+  fi
 }
 
 function nux.help.shelldoc {
-  cat | sed -r \
+  sed -r \
     -e "s/^## ?(.*)/${NC_White}\1${NC_No}/gI" \
     -e "s/^# ?(.*)/${NC_Bold}\1${NC_No}/gI" \
-    -e "s/^   ?[a-z0-9.-_]*/${NC_Bold}&${NC_No}/gI" \
+    -e "s/^([ a-z0-9.-_]*)::/${NC_Bold}\1${NC_No}/gI" \
     -e "s/\*\*([^*]*)\*\*/${NC_Bold}\1${NC_No}/gI"  \
     -e "s/\*([^*]*)\*/${NC_White}\1${NC_No}/gI"  \
-
+    --
 }
 
 function nux.url.parse {

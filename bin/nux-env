@@ -1,7 +1,8 @@
 #!/usr/bin/env nux-runner
-### Portable *nix environment by tonydamage
+## Portable *nix environment by tonydamage
 
-## status - Show status of nux-env installation
+## status::
+##   Show status of nux-env installation
 task.status() {
     echo nux-env folder: $NUX_ENV_DIR
     pushd $NUX_ENV_DIR > /dev/null
@@ -9,7 +10,8 @@ task.status() {
     popd > /dev/null
 }
 
-## update - pulls latest nux-env from repository.
+## update::
+##   pulls latest nux-env from repository.
 task.update() {
   pushd $NUX_ENV_DIR > /dev/null
   git stash
@@ -18,17 +20,17 @@ task.update() {
   popd > /dev/null
 }
 
-##  install Install nux-env recommended binaries if not present
-##
+##  install::
+##    Install nux-env recommended binaries if not present
 task.install() {
   :
 
 }
 
-##  help.inc <inc>
+##  help library:: <inc>
 ##     Displays help for specified nuxs-env library.
 ##
-task.help.inc() {
+task.help.library() {
   local name="$1"
   nux.help.comment $NUX_INC_DIR/$name.inc.sh
 }
