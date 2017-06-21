@@ -26,13 +26,15 @@
 ##     ln -s github/nux-env/bashrc .bashrc
 ##
 
+nux.use nux.dsl
+nux.use nuxfs
+
+
 local WORKDIR=$(pwd)
 local TEMPLATE_DIR=$NUX_ENV_DIR/templates
 local SUFFIX=".nuxfs"
 local TEMPLATE_FILTER="*$SUFFIX"
 
-nux.use nux.dsl
-nux.use nuxfs
 
 
 GIT_BIN=$(which git)
@@ -43,8 +45,8 @@ GIT_BIN=$(which git)
 ##     Verifies that directories and files matches the specification
 ##     in *.nuxfs* definition
 ###
-###    Check is non-descructive operation, whose only output is printing out
-###    information
+###    Check is non-descructive operation, whose only output is printing
+###    files violating nuxfs definition.
 task.check() {
   nuxfs.dsl.process "$@";
 }
@@ -57,15 +59,31 @@ task.describe() {
 ##     Creates missing files as specified in *.nuxfs* definition.
 ##     **DOES NOT MODIFY** existing files breaking specification.
 ##
+###    Keywords have following resolution:
+###      dir::
+###        If directory does not exists, create it
+###      git::
+###        If git repository does not exists, clone it
+###      link::
+###        If symlink does not exists, create it
+###      cathegorize::
+###        If cathegory directories does not exists, create them
+
 task.apply() {
   nuxfs.dsl.process "$@";
 }
 
 ##   fix:: [<subtree>]
 ##     Performs apply and tries to fix warnings and errors and files as
-##     specified in nuxfs definition. This operation **DOES MODIFY**
+##     specified in nuxfs definition. This operation **DOES MODIFY** and may **DELETE**
 ##     existing files.
 ##
+###    Keywords have similar resolution as an *apply* with following exceptions:
+###      cathegorize::
+###        Matched files to cathegory directories
+###      should-not-exists::
+###        Matched files are deleted
+###
 task.fix() {
   nuxfs.dsl.process "$@";
 }
