@@ -79,6 +79,15 @@ nuxr.repl.process() {
   fi
 }
 
+nuxr.repl.expose() {
+  # FIXME: Figure different way of exposing direct functions without wrapping
+  for cmd in "$@"; do
+    eval """function repl.command.$cmd {
+        $cmd "\$@"
+    }
+    """
+  done
+}
 ##
 ##  repl.command.::
 ##    fallback command which does nothing if user just presses enter.
@@ -110,6 +119,13 @@ nuxr.tasks.runtime.search() {
   set | grep -G "^task\.$1.* ()" \
   | cut -d "." -f2- \
   | cut -d"(" -f1
+}
+
+nuxr.repl.commands.search() {
+  set | grep -E "^((repl\\.command)|(task))\\.$1.* ()" \
+  | sed -re 's/^((repl\.command)|(task))\.//gi' \
+  | cut -d"(" -f1 | sort | uniq
+
 }
 
 nuxr.repl.completer.help() {
@@ -148,7 +164,7 @@ nuxr.repl.completer() {
   fi
   local result="";
   if [ $current_pos -le 1 ] ; then
-    result=$(nuxr.tasks.runtime.search $current_word | grep -v "help\\.")
+    result=$(nuxr.repl.commands.search $current_word | grep -v "help\\.")
   elif [ $current_pos -ge 2 ]; then
     command=${words[0]}
     nux.log debug "Trying to use completer for '$command'"
