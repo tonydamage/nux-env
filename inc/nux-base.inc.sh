@@ -149,6 +149,11 @@ function nux.check.function {
   return 1
 }
 
+function nux.check.nuxenv.file {
+  path=$(realpath -Lms "$1")
+  [[ "$path" =~ "^$NUX_ENV_DIR" ]]
+}
+
 function nux.check.exec {
   local binary=$1;
   test -n "$(which "$binary")"
@@ -205,7 +210,3 @@ function nux.url.parse {
     -re "s/(([^:\/]*):\/\/)?(([^@\/:]*)@)?([^:\/]+)(:([0-9]+))?(\/(.*))?/$format/g"
 
 }
-
-NUX_ENV_MACHINE=/usr/
-NUX_ENV_MACHINE_LOCAL=/usr/local/
-NUX_ENV_USER_LOCAL=$HOME/.local
