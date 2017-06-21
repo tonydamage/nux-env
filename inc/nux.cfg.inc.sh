@@ -11,7 +11,8 @@
 ##    - *local* - by default same as global
 ##    - *global* - ~/.config/{app-name}/
 ##    - *dist* - {app-path}/config
-##  - value is tried to be read first from *local*, then *global*, then *dist* configuration.
+##  - value is tried to be read first from *local*, then *global*, then *dist*
+##    configuration.
 ##
 ## #Usage
 ##

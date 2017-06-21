@@ -1,0 +1,134 @@
+#!/usr/bin/env nux-runner
+
+# FIXME: Check for configuration
+
+#source ~/.config/nux-env/taskie
+
+nux.use nuxfs
+nux.use nux.repl
+
+nux.use taskie/backend.github
+nux.use taskie/backend.gogs
+
+with.backend() {
+  backendId="$1";
+  backend=$(echo $backendId | cut -d: -f1);
+  nux.exec.optional backend.$backend.with;
+}
+
+endwith.backend() {
+  unset backendId;
+  unset backendEngine;
+}
+
+
+task.add() {
+  with.backend $(backend.detect);
+    if ! backend.$backend.issue.exists "$@" ; then
+      backend.$backend.add "$@";
+    else
+      nux.echo.error Issue already exists.
+    fi
+  endwith.backend;
+}
+
+task.interactive() {
+  with.backend $(backend.detect);
+  .process() {
+    backendFunc=backend.$backend.$command;
+    if nux.check.function $backendFunc; then
+
+      eval backend.$backend.$command "$arguments"
+    else
+      echo "$command" is not defined.
+    fi
+  }
+  .complete() {
+    nux.log debug "Requested completion for " "$@"
+    echo """
+      add
+      done
+      close
+      finish
+      exit
+      list
+      report
+      help
+    """ | grep -G "^ *$@"
+      #statements
+      #statements
+      #statementsi
+  }
+  .prompt() {
+    echo "${nc_green}taskie${nc_end}> "
+  }
+  nux.repl.start .process .prompt .complete
+  endwith.backend;
+}
+
+task.list() {
+  with.backend $(backend.detect);
+    backend.$backend.list "$@";
+  endwith.backend;
+}
+
+taskie_backends=$(nux.cfg.read backends.preference);
+
+git.origins() {
+  nux.log debug Closest git parent is $closest_git;
+  if [ -n "$closest_git" ]; then
+    grep -E "url *=" "$closest_git/config" | cut -d= -f2
+  fi
+}
+
+task.detect() {
+  backend.detect --all "$@";
+}
+
+backend.detect() {
+  all=$1;
+  if [ "$all" = "--all" ]; then
+    shift;
+  fi
+  for backend in $taskie_backends; do
+    nux.log trace Executing backend $backend detection
+      localId=$(backend.$backend.detect "$@")
+      if [ -n "$localId" ]; then
+        echo $backend:$localId
+        if [ "$all" != "--all" ]; then
+          return 0;
+        fi
+      fi
+  done;
+}
+
+
+
+
+
+
+
+gogs.config.site() {
+  nux.cfg.read "gogs.\"$1\"$2";
+}
+
+backend.github.detect() {
+  closest_git=$(nuxfs.closest .git "$1")
+
+  git.origins "$closest_git" | grep github.com | while read origin
+  do
+    repo=$(nux.url.parse "$origin" "\9")
+    echo $repo:$closest_git
+  done
+}
+
+
+
+backend.file.detect() {
+  :
+
+}
+
+backend.dir.detect() {
+  :
+}
