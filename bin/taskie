@@ -23,6 +23,15 @@ endwith.backend() {
 }
 
 
+task.labels() {
+  :
+}
+
+##
+## add:: [labels] title
+##   Adds issue to the task repository. If issue of same title is
+##   already known locally this fails.
+##
 task.add() {
   with.backend $(backend.detect);
     if ! backend.$backend.issue.exists "$@" ; then
@@ -33,40 +42,10 @@ task.add() {
   endwith.backend;
 }
 
-task.interactive() {
-  with.backend $(backend.detect);
-  .process() {
-    backendFunc=backend.$backend.$command;
-    if nux.check.function $backendFunc; then
 
-      eval backend.$backend.$command "$arguments"
-    else
-      echo "$command" is not defined.
-    fi
-  }
-  .complete() {
-    nux.log debug "Requested completion for " "$@"
-    echo """
-      add
-      done
-      close
-      finish
-      exit
-      list
-      report
-      help
-    """ | grep -G "^ *$@"
-      #statements
-      #statements
-      #statementsi
-  }
-  .prompt() {
-    echo "${nc_green}taskie${nc_end}> "
-  }
-  nux.repl.start .process .prompt .complete
-  endwith.backend;
-}
-
+##
+##
+##
 task.list() {
   with.backend $(backend.detect);
     backend.$backend.list "$@";
