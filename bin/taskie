@@ -41,8 +41,7 @@ task.add() {
     fi
   endwith.backend;
 }
-
-
+nuxr.repl.expose cd pwd ls
 ##
 ##
 ##
