@@ -7,6 +7,7 @@
 nux.use nuxfs
 nux.use nux.repl
 
+nux.use taskie/common
 nux.use taskie/backend.github
 nux.use taskie/backend.gogs
 

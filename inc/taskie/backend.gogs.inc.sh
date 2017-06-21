@@ -1,11 +1,24 @@
 nux.use taskie/backend.utils
-
+nux.use nux.json
 backend.gogs.list() {
   local api="$gogs_api_url/repos/$gogs_repository/issues?token=$gogs_api_token"
   local append_next="&token=$gogs_api_token"
 
   backend.githublike.get "$api" "$append_next" \
-    | jq -r ".[] | [.number,.state,.title] | @sh"
+    | jq -r ".[] | [.number,.state,(\"#\" + .labels[].name) ,.title] | @sh" \
+    | while read line
+      do
+        eval taskie.issue.display.short $line
+      done
+}
+
+argz() {
+  int=0;
+  for arg in "$@"
+  do
+    let int=int+1
+    echo $int $arg
+  done
 }
 
 backend.gogs.issue.exists() {
