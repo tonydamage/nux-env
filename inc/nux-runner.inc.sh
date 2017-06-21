@@ -16,19 +16,25 @@ nuxr.run() {
 }
 
 function nuxr.task.help {
-  command="$1"
-  nux.log trace "Displaying help command for: $command"
-  if [ -z $command ] ; then
+  if [ -z "$@" ] ; then
     echo Usage: $NC_Bold$NUX_SCRIPTNAME ${NC_No}${NC_White}\<command\>${NC_No} [\<options\>]
     nux.help.comment "$NUX_SCRIPT"
     nux.help.comment "$NUX_RUNNER"
     nux.exec.optional task.help.additional
-  elif nux.check.function "task.help.$command" ; then
-    shift;
-    task.help.$command "$@";
   else
-    nuxr.help.task.comment "$NUX_SCRIPT" "$command" \
-      || nuxr.help.task.comment "$NUX_RUNNER" "$command" \
+    nuxr.task.help.topic "$@"
+  fi
+}
+
+function nuxr.task.help.topic {
+  topic="$1"
+  nux.log trace "Displaying topic for: $topic"
+  if nux.check.function "task.help.$topic" ; then
+    shift;
+    task.help.$topic "$@";
+  else
+    nuxr.help.task.comment "$NUX_SCRIPT" "$topic" \
+      || nuxr.help.task.comment "$NUX_RUNNER" "$topic" \
       || echo "Help topic $1 not found. Run '$NUX_APPNAME help'  to see topics."
   fi
 }
@@ -58,20 +64,46 @@ function nuxr.help.task.comment {
 ##
 nuxr.task.interactive() {
   nux.use nux.repl
-  .process() {
-    backendFunc=task.$command;
-    if nux.check.function $backendFunc; then
+  nux.repl.start nuxr.repl.process nuxr.repl.prompt nuxr.repl.completer
+}
 
-      eval nuxr.run "$command" "$arguments"
-    else
-      echo "$command" is not defined.
-    fi
-  }
 
-  .prompt() {
-    echo "${nc_green}$NUX_APPNAME${nc_end}> "
-  }
-  nux.repl.start .process .prompt nuxr.repl.completer
+nuxr.repl.process() {
+  backendFunc=task.$command;
+  if nux.check.function repl.command.$command; then
+    eval repl.command.$command "$arguments"
+  elif nux.check.function task.$command; then
+    eval nuxr.run "$command" "$arguments"
+  else
+    echo "$command" is not defined.
+  fi
+}
+
+##
+##  repl.command.::
+##    fallback command which does nothing if user just presses enter.
+##
+repl.command.() {
+  :
+}
+
+repl.command.help() {
+  if [ -z "$@" ]  ;then
+    echo "Usage: help [<command> | <topic>]"
+    echo Displays help for specified topic or command.
+    echo
+    echo "${nc_white}Available topics:$nc_end"
+    nuxr.tasks.runtime.search help.$current_word | cut -d"." -f2 | column
+    echo
+    echo "${nc_white}Available commands:$nc_end"
+    nuxr.tasks.runtime.search $current_word | grep -v "help\\." | column
+  else
+    nuxr.task.help.topic "$@"
+  fi
+}
+
+nuxr.repl.prompt() {
+  echo "${nc_green}$NUX_APPNAME${nc_end}> "
 }
 
 nuxr.tasks.runtime.search() {
@@ -105,20 +137,18 @@ nuxr.repl.completer() {
 
   local words=($line)
   local current_pos=${#words[@]};
-  if [ "$current_pos" -eq 0 ]; then
-    nuxr.tasks.runtime.search | sort | uniq
-    return
-  fi
-
-  local current_word=${words[${#words[@]}-1]};
-  if [ "$line" != "${line%% }" ] ; then
-    nux.log debug "Creating proposal for next word."
-    let current_pos=current_pos+1
-    current_word=""
+  local current_word="";
+  if [ "$current_pos" -gt 0 ]; then
+    current_word=${words[${#words[@]}-1]};
+    if [ -n "$line" -a "$line" != "${line%% }" ] ; then
+      nux.log debug "Creating proposal for next word."
+      let current_pos=current_pos+1
+      current_word=""
+    fi
   fi
   local result="";
-  if [ $current_pos -eq 1 ] ; then
-    result=$(nuxr.tasks.runtime.search $current_word)
+  if [ $current_pos -le 1 ] ; then
+    result=$(nuxr.tasks.runtime.search $current_word | grep -v "help\\.")
   elif [ $current_pos -ge 2 ]; then
     command=${words[0]}
     nux.log debug "Trying to use completer for '$command'"
