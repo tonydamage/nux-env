@@ -104,6 +104,12 @@ task.() {
   task.help
 }
 
+
+##    interactive::
+##      Executes interactive application shell. 
+task.interactive() {
+  nuxr.task.interactive "$@"
+}
 ###
 ###
 

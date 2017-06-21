@@ -76,6 +76,7 @@ function nux.repl.completion() {
   complete_command=$(complete -p | grep " ${program_name}$")
 
   COMPREPLY=()
+
   COMPREPLY=($($compgen_command "$completion_line"))
 
   # get commmon prefix of available completions
