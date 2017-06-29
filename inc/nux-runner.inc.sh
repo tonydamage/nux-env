@@ -1,22 +1,34 @@
 nuxr.run() {
   TASK=$1; shift; # Determines task
-  if [ -z "$NUX_NO_INCLUDE" ]
-  then
-  	nux.log debug  "Including script: $NUX_SCRIPT"
-  	source $NUX_SCRIPT; # Includes script
-  fi
   if nux.check.function task.$TASK ; then
     nux.log debug  "Running task: $TASK";
     task.$TASK "$@" # Runs task
   else
     echo "$NUX_SCRIPTNAME: Unrecognized task  ''$TASK' not available."
     echo "Try '$NUX_SCRIPTNAME help' for more information."
-    exit -1
+    return -1
   fi
 }
 
+
+nuxr.run.subtask() {
+  SUBTASK=$1; shift;
+  if nux.check.function task.$TASK.$SUBTASK ; then
+    nux.log debug  "Running subtask: $TASK";
+    task.$TASK.$SUBTASK "$@" # Runs task
+  else
+    echo "$NUX_SCRIPTNAME: '$TASK' '$SUBTASK' not available."
+    echo "Try '$NUX_SCRIPTNAME help' for more information."
+  fi
+}
+
+nuxr.main() {
+  nuxr.run "$@"
+}
+
 function nuxr.task.help {
-  if [ -z "$@" ] ; then
+  allArgs="$@"
+  if [ -z "$allArgs" ] ; then
     echo Usage: $NC_Bold$NUX_SCRIPTNAME ${NC_No}${NC_White}\<command\>${NC_No} [\<options\>]
     nux.help.comment "$NUX_SCRIPT"
     nux.help.comment "$NUX_RUNNER"
@@ -27,9 +39,10 @@ function nuxr.task.help {
 }
 
 function nuxr.task.help.topic {
-  topic="$1"
-  nux.log trace "Displaying topic for: $topic"
-  if nux.check.function "task.help.$topic" ; then
+  topic="$@"
+  topic_dot=$(tr " " "." <<< $topic)
+  nux.log trace "Displaying topic for: '$topic' '$topic_dot'"
+  if nux.check.function "task.help.$topic_dot" ; then
     shift;
     task.help.$topic "$@";
   else
@@ -42,10 +55,10 @@ function nuxr.task.help.topic {
 function nuxr.help.task.comment {
   local script="$1"
   local task="$2"
-
-  nux.log trace "Trying to figure task documentation location for $@"
+  local task_dot=$(tr " " "." <<< "$task")
+  nux.log trace "Trying to figure task documentation location for $task $task_dot"
   doc_start=$(grep -hn -E "## +($task)::" "$script" | cut -d: -f1)
-  code_start=$(grep -hn -E "((function +task.$task)|(task.$task *\(\))) +{" "$script" | cut -d: -f1)
+  code_start=$(grep -hn -E "((function +task.$task_dot)|(task.$task_dot *\(\))) +{" "$script" | cut -d: -f1)
   nux.log trace "doc_start" $doc_start $code_start
   if [ -n "$doc_start" -a -n "$code_start" ] ; then
     sed -n "$doc_start,$code_start"p "$script" \

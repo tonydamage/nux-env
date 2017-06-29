@@ -106,7 +106,7 @@ task.() {
 
 
 ##    interactive::
-##      Executes interactive application shell. 
+##      Executes interactive application shell.
 task.interactive() {
   nuxr.task.interactive "$@"
 }
@@ -115,19 +115,32 @@ task.interactive() {
 
 if [ "$NUX_RUNNER" = "$(realpath "$0")" ]
 then
-	readonly NUX_SCRIPT=$1;
+	NUX_SCRIPT=$1;
 	shift;
 else
-	readonly NUX_SCRIPT=$0;
-	readonly NUX_NO_INCLUDE="no include";
+	NUX_SCRIPT=$0;
+	NUX_NO_INCLUDE="no include";
 fi
 
 if [ -n  "$NUX_SCRIPT" ]; then
   # Determines script
-  readonly NUX_SCRIPTNAME=$(basename $NUX_SCRIPT)
-  readonly NUX_APPNAME=$(basename $NUX_SCRIPT)
-  nuxr.run "$@"
+  NUX_SCRIPT_DIR=$(dirname "$NUX_SCRIPT")
+  NUXR_APP_BIN=$(realpath "$NUX_SCRIPT")
+  NUXR_APP_BIN_DIR=$(dirname "$NUXR_APP_BIN")
+  NUXR_APP_DIR=$(dirname "$NUXR_APP_BIN_DIR")
+  NUXR_APP_NAME=$(basename "$NUX_SCRIPT")
 
+  NUX_SCRIPTNAME=$(basename "$NUX_SCRIPT")
+
+  nux.log trace "NUX_SCRIPT env: " $(set | grep NUX_SCRIPT)
+  if [ -z "$NUX_NO_INCLUDE" ]
+  then
+  	nux.log debug  "Including script: $NUX_SCRIPT"
+    nux.log trace "NUX_SCRIPT env: " $(set | grep NUX_SCRIPT)
+  	source $NUX_SCRIPT; # Includes script
+    NUX_NO_INCLUDE="no-include"
+  fi
+  nuxr.main "$@"
 else
 
   echo  Usage: nux-runner [script] [task] [options]
