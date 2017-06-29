@@ -21,7 +21,7 @@ function nux.json.start {
 ##     and opened file use *nux.json.start*
 function nux.json.open {
   local file="$1"
-  if [ -f $file ]; then
+  if [ -f "$file" ]; then
     nux_json_source="$file"
   fi
 }
@@ -46,6 +46,12 @@ function nux.json.write {
   nux_json_opstack="${nux_json_opstack} | $path |= \"$value\""
 }
 
+function nux.json.write.raw {
+  local path=".$1";
+  local value="$2";
+  nux_json_opstack="${nux_json_opstack} | $path |= $value"
+}
+
 ##   nux.json.flush [<target>]
 ##     Flushes any write operations to specified *target* file.
 ##     If *target* is not specified JSON is outputted to *STDIN*.
@@ -58,7 +64,7 @@ function nux.json.flush {
   if [ -n "$target" ]; then
     local write_target="$target";
     if [ "$nux_json_source" == "$target" ]; then
-      write_target=$(mktemp $(dirname "$target")/tempXXXXXX.json)
+      write_target=$(mktemp "$(dirname "$target")/tempXXXXXX.json")
     fi
     jq -r "$nux_json_opstack" "$nux_json_source" > "$write_target"
     if [ "$nux_json_source" == "$target" ]; then
