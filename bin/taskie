@@ -10,6 +10,7 @@ nux.use nux.repl
 nux.use taskie/common
 nux.use taskie/backend.github
 nux.use taskie/backend.gogs
+nux.use taskie/backend.dir
 
 with.backend() {
   backendId="$1";
@@ -24,7 +25,9 @@ endwith.backend() {
 
 
 task.labels() {
-  :
+  with.backend $(backend.detect);
+    backend.$backend.labels "$@";
+  endwith.backend;
 }
 
 ##
@@ -35,19 +38,36 @@ task.labels() {
 task.add() {
   with.backend $(backend.detect);
     if ! backend.$backend.issue.exists "$@" ; then
-      backend.$backend.add "$@";
+      local labels=$(backend.$backend.labels.id)
+      nux.log debug "Labels: $labels"
+      label=$(echo "$labels" | grep -G "^$1:")
+      local labelName=""
+      local labelId=""
+      if [ -n "$label" ] ;then
+        labelId=${label#*:}
+        labelName=${label%:*}
+        nux.log debug "First argument is label $labelName ($labelId)"
+        shift;
+      fi
+
+      backend.$backend.issue.add "$@";
     else
       nux.echo.error Issue already exists.
     fi
   endwith.backend;
 }
-nuxr.repl.expose cd pwd ls
+
+nuxr.repl.expose cd pwd ls clear
+nuxr.repl.prompt() {
+  echo "${nc_green}$NUX_APPNAME${nc_end}:${nc_blue}$(pwd)${nc_end}> "
+}
+
 ##
 ##
 ##
 task.list() {
   with.backend $(backend.detect);
-    backend.$backend.list "$@";
+    backend.$backend.issue.list "$@";
   endwith.backend;
 }
 
@@ -70,7 +90,7 @@ backend.detect() {
     shift;
   fi
   for backend in $taskie_backends; do
-    nux.log trace Executing backend $backend detection
+    nux.log trace "Executing backend '$backend' detection"
       localId=$(backend.$backend.detect "$@")
       if [ -n "$localId" ]; then
         echo $backend:$localId
@@ -91,23 +111,6 @@ gogs.config.site() {
   nux.cfg.read "gogs.\"$1\"$2";
 }
 
-backend.github.detect() {
-  closest_git=$(nuxfs.closest .git "$1")
-
-  git.origins "$closest_git" | grep github.com | while read origin
-  do
-    repo=$(nux.url.parse "$origin" "\9")
-    echo $repo:$closest_git
-  done
-}
-
-
-
 backend.file.detect() {
-  :
-
-}
-
-backend.dir.detect() {
   :
 }

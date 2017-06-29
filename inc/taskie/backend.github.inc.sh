@@ -1,3 +1,8 @@
+nux.use taskie/githublike
+
+githublike github
+
+
 backend.github.with() {
   github_repository=$(echo $backendId | cut -d: -f2)
   github_api_url=https://api.github.com
@@ -6,12 +11,22 @@ backend.github.with() {
   github_issuemap=~/.config/taskie/github.issuemap.json
   nux.log debug Github repository is $github_repository;
   nux.log debug Github API URL: $github_api_url;
+
+  githublike_wrapper=github
+  githublike_api=$github_api_url;
+  githublike_repository=$github_repository;
+  githublike_api_append="";
+  githublike_curl_params="-u $github_api_user:$github_api_token";
+  githublike_next_append="";
+  githublike.with
 }
 
-backend.github.list() {
-  local api="$github_api_url/repos/$github_repository/issues"
+backend.github.detect() {
+  closest_git=$(nuxfs.closest .git "$1")
 
-  CURL_ADDITIONAL_ARGS="-u $github_api_user:$github_api_token" \
-    backend.githublike.get "$api" | jq -r ".[] | [.number,.state,.title] | @sh"
-
+  git.origins "$closest_git" | grep github.com | while read origin
+  do
+    repo=$(nux.url.parse "$origin" "\9")
+    echo $repo:$closest_git
+  done
 }
