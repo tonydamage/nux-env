@@ -30,10 +30,10 @@ nux.use nux.dsl
 nux.use nuxfs
 
 
-local WORKDIR=$(pwd)
-local TEMPLATE_DIR=$NUX_ENV_DIR/templates
-local SUFFIX=".nuxfs"
-local TEMPLATE_FILTER="*$SUFFIX"
+WORKDIR=$(pwd)
+TEMPLATE_DIR=$NUX_ENV_DIR/templates
+SUFFIX=".nuxfs"
+TEMPLATE_FILTER="*$SUFFIX"
 
 
 
@@ -95,6 +95,9 @@ task.help.dsl() {
   nux.help.comment "$NUX_INC_DIR/dsl/nuxfs.dsl"
 }
 
+
+
+
 nuxfs.dsl.process() {
   WORKDIR=$(pwd);
   TARGET=$1;
@@ -111,7 +114,7 @@ nuxfs.dsl.process() {
 #
 	if [ "$NUXFS_DEF" = "" ]; then
 		nuxfs.error $(pwd) "No nuxfs configuration found."
-		exit 1;
+		return 1;
 	fi
 	NUXFS_DEF_DIR=$(dirname $NUXFS_DEF);
 	TARGET_RELATIVE=$(realpath -ms "$TARGET" --relative-to "$NUXFS_DEF_DIR")
@@ -136,7 +139,7 @@ nuxfs.dsl.process() {
   #    #  nuxfs.warning "$3" "Does not have definition in $DEF";
   #   fi
   else
-    nuxfs.error "$NUXFS_DEF"  Definition file does not exists.
+    nux.dsl.error "$NUXFS_DEF"  Definition file does not exists.
   fi
 }
 
@@ -252,6 +255,13 @@ function task.capture {
 		done;
 	fi
 
+}
+
+
+nuxr.repl.expose cd pwd ls find
+
+nuxr.repl.prompt() {
+  echo "${nc_green}$NUX_APPNAME${nc_end}:${nc_blue}$(pwd)${nc_end}> "
 }
 
 function nuxfs.template.list {

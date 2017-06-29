@@ -45,6 +45,21 @@ dir.entered() {
   fi
 }
 
+.block opt-dir name
+
+use-template() {
+  local template=$1;
+  local possible=$(nux.cfg.get.path "templates/$template.nuxfs");
+  if [ -z "$possible" ] ; then
+    rel_path=$template .error Template not found.
+    return
+  fi
+  to_include=$(echo "$possible" | head -n1)
+  nux.log trace "Possible templates: '$possible'"
+  nux.log trace "Template $to_include will be used"
+  source "$to_include"
+}
+
 ##   link <name> <target>
 ##        Defines a symbolik link with specified *name*, which points to
 ##        specified target
