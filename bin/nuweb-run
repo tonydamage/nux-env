@@ -4,4 +4,12 @@ readonly NUWEB_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 source $NUWEB_BIN_DIR/../inc/nux-base.inc.sh
 
 nux.use nuweb
-source "$1"
+
+dirty.url.decode() {
+  sed -e "s/%20/ /gi" <<< "$@"
+}
+nux.log.level debug
+NUWEB_SCRIPT_URI="${SCRIPT_FILENAME#$DOCUMENT_ROOT}" \
+NUWEB_MAYBE_PWD="$DOCUMENT_ROOT$(dirty.url.decode "${REQUEST_URI%%\?*}")" \
+NUWEB_REQUEST_PATH="${REQUEST_URI%%\?*}" \
+  source "$1"

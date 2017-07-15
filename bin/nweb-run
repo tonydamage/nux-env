@@ -1,6 +1,1 @@
-#!/usr/bin/env bash
-
-readonly NUWEB_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
-source $NUWEB_BIN_DIR/../inc/nux-base.inc.sh
-
-source "$1"
+nuweb-run

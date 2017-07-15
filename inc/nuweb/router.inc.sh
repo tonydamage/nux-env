@@ -27,12 +27,10 @@ nuweb.router.tryexec.concrete() {
 
   func=$2;
   shift; shift;
-  echo "Checking Path Spec: '$path_spec', Query Spec: '$query_spec' Function:$func Additional Args:$@" >&2
+  nux.log trace  "Checking Path Spec: '$path_spec', Query Spec: '$query_spec' Function:$func Additional Args:$@" >&2
 
   IFS='/' read -ra spec_components <<< "$path_spec"
-  i=0
-  path_args=""
-  path_c="";
+  i=0;path_args="";path_c="";
   for path in "${PATH_COMPONENTS[@]}" ; do
     spec=${spec_components[$i]}
     if [ "$spec" == "@+" ]; then
@@ -71,7 +69,8 @@ nuweb.router.tryexec.concrete() {
     fi
   done
   fi
-  $func $@ $path_args $path_c $query_args
+  path_c=$(dirty.url.decode "$path_c")
+  $func "$@" $path_args "$path_c" $query_args
   exit 0
 
 }
@@ -99,7 +98,7 @@ nuweb.router.exec() {
   if [ -z "$path" ] ; then
     path="/"
   fi
-  
+
   IFS='/' read -ra PATH_COMPONENTS <<< "$path"
 
   $definition
