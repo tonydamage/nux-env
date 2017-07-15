@@ -157,6 +157,14 @@ function nux.check.nuxenv.file {
   [[ "$path" =~ "^$NUX_ENV_DIR" ]]
 }
 
+
+function nux.check.optional {
+  local function="$1"; shift;
+  if nux.check.function "$function" ; then
+    $function "$@"
+  fi
+}
+
 function nux.check.exec {
   local binary=$1;
   test -n "$(which "$binary")"
@@ -182,6 +190,16 @@ function nux.exec.optional {
     $FUNC "$@"
   fi
 }
+
+function nux.exec.or {
+  local maybe="$1"; shift;
+  local to_exec="$1"; shift;
+  if nux.check.function "$maybe" ; then
+    to_exec=$maybe
+  fi
+  $to_exec "$@";
+}
+
 
 function nux.dirty.urlencode {
     echo -n "$1" | sed "s/ /%20/g"
