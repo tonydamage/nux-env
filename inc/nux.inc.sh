@@ -197,6 +197,7 @@ function nux.exec.or {
   if nux.check.function "$maybe" ; then
     to_exec=$maybe
   fi
+  nux.log trace "Executing $to_exec , optional was $maybe"
   $to_exec "$@";
 }
 
