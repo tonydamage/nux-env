@@ -40,7 +40,7 @@ readonly NUX_RUNNER_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 source $NUX_RUNNER_BIN_DIR/../inc/nux.inc.sh
 readonly NUX_RUNNER=$NUX_RUNNER_BIN_DIR/nux-runner;
 
-nux.use nux-runner
+nux.use nuxr
 nux.use nux.cfg
 
 ##
