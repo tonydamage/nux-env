@@ -4,7 +4,7 @@
     sed -r \
       -e "s/^## ?(.*)/${NC_White}\1${NC_No}/gI" \
       -e "s/^# ?(.*)/${NC_Bold}\1${NC_No}/gI" \
-      -e "s/^([ a-z0-9.-_]*)::/${NC_Bold}\1${NC_No}/gI" \
+      -e "s/^([ a-z0-9._-]*)::/${NC_Bold}\1${NC_No}/gI" \
       -e "s/\*\*([^*]*)\*\*/${NC_Bold}\1${NC_No}/gI"  \
       -e "s/\*([^*]*)\*/${NC_White}\1${NC_No}/gI"  \
       --
