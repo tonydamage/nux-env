@@ -11,7 +11,7 @@ nux.use nuxr/repl
       nux.log debug  "Running task: $TASK";
       task.$TASK "$@" # Runs task
     else
-      echo "$NUX_SCRIPTNAME: Unrecognized task  ''$TASK' not available."
+      echo "$NUX_SCRIPTNAME: Unrecognized task  '$TASK' not available."
       echo "Try '$NUX_SCRIPTNAME help' for more information."
       return -1
     }

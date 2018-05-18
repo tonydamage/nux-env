@@ -1,36 +1,44 @@
-#!/usr/bin/env nux-runner
+#!/usr/bin/env nuxr-nuxsh
 ## Portable *nix environment by tonydamage
 
 ## status::
 ##   Show status of nux-env installation
-task.status() {
-    echo nux-env folder: $NUX_ENV_DIR
-    pushd $NUX_ENV_DIR > /dev/null
-    git status
-    popd > /dev/null
-}
+
+@namespace task. {
+  function :status {
+      echo nux-env folder: $NUX_ENV_DIR
+      pushd $NUX_ENV_DIR > /dev/null
+      git status
+      popd > /dev/null
+  }
 
 ## update::
 ##   pulls latest nux-env from repository.
-task.update() {
-  pushd $NUX_ENV_DIR > /dev/null
-  git stash
-  git pull -r
-  git stash pop
-  popd > /dev/null
+  function :update {
+    pushd $NUX_ENV_DIR > /dev/null
+    git stash
+    git pull -r
+    git stash pop
+    popd > /dev/null
 }
 
 ##  install::
 ##    Install nux-env recommended binaries if not present
-task.install() {
-  :
+  function :install {
+    :
 
-}
+  }
+##  fixmes::
+##     List all fixmes for nux-env
+  function :fixmes {
+    fgrep -n FIXME "$NUX_INC_DIR/..bin/"* 
+    find "$NUX_INC_DIR"  -iname "*.sh" | xargs fgrep -n FIXME
+  }
 
 ##  help library:: <inc>
 ##     Displays help for specified nuxs-env library.
 ##
-task.help.library() {
-  local name="$1"
-  nux.help.comment $NUX_INC_DIR/$name.inc.sh
+  function :help.library name {
+    nux.help.comment $NUX_INC_DIR/$name.inc.sh
+  }
 }

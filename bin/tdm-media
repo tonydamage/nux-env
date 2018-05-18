@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env nux-runner
 
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
@@ -19,20 +19,44 @@ function task.nikon-mp4 {
 }
 
 function task.downscale {
-	TARGET=$1
-	shift
-	SIZE=2048
+	local TARGET=$1; shift;
+	local SIZE=$1; shift
+	local i=0;
+	local count="$#";
+	mkdir -p $TARGET;
 	for image in "$@"; do
+		let "i=i+1"
 		target_file=$TARGET/$(basename $image)
-		echo "Downsampling image $image to $target_file"
+		echo "Image: $i/$count Downsampling  $image -> $target_file"
 		convert $image \
 			-filter Lanczos -sampling-factor 1x1 \
 			-resize "${SIZE}x${SIZE}>" \
 			-quality 90 \
 			$target_file
 	done
-
 }
-TASK=$1
-shift
-task.$TASK "$@"
+
+
+## to:: <jpg|png> <image...>
+##
+## Convert image to
+##
+function task.to {
+	target=$1;
+	shift;
+	if ! nux.check.function "media.to.$target" ; then
+		echo Target type "$target" is not supported.
+		return -1
+	fi
+	for file in "$@"; do
+		target_dir=$(dirname "$file");
+		target_file=$(basename "$file" | sed -re 's/\.[a-z0-9_]+$//g' -e "s/\$/.$target/g" );
+		target_full="$target_dir/$target_file";
+		media.to.$target "$file" "$target_full"
+		echo $file $target_file
+	done
+}
+
+function media.to.jpg {
+	convert "$1" -quality 90 -auto-orient "$2"
+}

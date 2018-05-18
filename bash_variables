@@ -1,2 +1,3 @@
 ## Maven configuration
 export MAVEN_OPTS='-Xms256m -XX:MaxPermSize=512m -Xmx1024m'
+export GOPATH='/home/tony/.go/'
