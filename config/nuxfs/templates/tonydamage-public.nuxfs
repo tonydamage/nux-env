@@ -1,0 +1,21 @@
+dir bin
+	link mvn ../apps/maven/bin/mvn
+	link eclipse ../apps/eclipse/eclipse
+enddir
+
+dir .repos
+  dir m2; enddir;
+  dir p2; enddir;
+  dir npm; enddir;
+enddir
+
+
+git "nux-env" "ssh://git@github.com/tonydamage/nux-env"
+link .bashrc nux-env/bashrc
+
+link .m2 .repos/m2
+link .p2 .repos/p2
+link .npm .repos/npm
+
+should-not-exists "*.tmp"
+should-not-exists "*.stl"

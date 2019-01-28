@@ -1,0 +1,43 @@
+#!/usr/bin/env nux-runner
+
+nux.use nudsl
+
+## highlight:: <language> <file>
+
+task.highlight() {
+  nux.use nux/nuxsh
+  nux.dsl.process highlight nux.nuxsh.language.def "$2"
+}
+
+task.language.show() {
+  nudsl.language.cache lang.yanglike.def
+}
+
+task.plan() {
+  nuxr.run.subtask "$@"
+}
+
+task.plan.compile() {
+  nux.use nudsl/$1
+  nudsl.plan lang.$1.def "$2"
+}
+
+task.plan.preview() {
+  nux.use nux/nuxsh
+  nux.dsl.plan nux.nuxsh.language "$2"
+  plan="$(nudsl.plan.file "$1" "$2")"
+  if [ -e "$plan" ]; then
+    if [ -n "$(which pygmentize)" ]; then
+       pygmentize -l bash "$plan";
+    else
+      cat "$plan";
+    fi
+  else
+    echo "Plan not available"
+  fi
+}
+
+task.run() {
+  echo "$@"
+  nudsl.process "lang.yanglike.def" "$2"
+}

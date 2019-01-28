@@ -2,8 +2,9 @@
 ##
 function nux.check.function {
   nux.log trace "Checking if $1 is function."
-  declare -f "$1" &>/dev/null && return 0
+  test "$(type -t "$1")" = "function" && return 0
   return 1
+
 }
 
 function nux.check.nuxenv.file {

@@ -1,0 +1,10 @@
+dir ".ui" 
+  git "Flat-Remix" "https://github.com/daniruiz/Flat-Remix"
+  git "Flat-Remix-GNOME-theme" "https://github.com/daniruiz/Flat-Remix-GNOME-theme"
+enddir
+dir ".themes"
+  link "Flat Remix" "../.ui/Flat-Remix-GNOME-theme/Flat Remix/"
+enddir
+dir ".icons"
+  link "Flat Remix" "../.ui/Flat-Remix/Flat Remix/"
+enddir

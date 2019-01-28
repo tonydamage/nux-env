@@ -31,7 +31,7 @@
 ##  fixmes::
 ##     List all fixmes for nux-env
   function :fixmes {
-    fgrep -n FIXME "$NUX_INC_DIR/..bin/"* 
+    fgrep -n FIXME "$NUX_INC_DIR/..bin/"*
     find "$NUX_INC_DIR"  -iname "*.sh" | xargs fgrep -n FIXME
   }
 
@@ -39,6 +39,13 @@
 ##     Displays help for specified nuxs-env library.
 ##
   function :help.library name {
-    nux.help.comment $NUX_INC_DIR/$name.inc.sh
+    nux.log debug "Library"
+    if [ -e "$NUX_INC_DIR/$name.inc.sh" ] {
+      nux.help.comment $NUX_INC_DIR/$name.inc.sh
+    elif [ -e "$NUX_INC_DIR/$name.nuxsh.sh" ]; then
+      nux.help.comment $NUX_INC_DIR/$name.nuxsh.sh
+    else
+      nux.fatal "Library not found"
+    }
   }
 }

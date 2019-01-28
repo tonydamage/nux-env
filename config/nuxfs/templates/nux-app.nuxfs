@@ -1,0 +1,8 @@
+name Nux Application Template
+dir bin
+
+enddir bin
+
+dir inc
+
+enddir

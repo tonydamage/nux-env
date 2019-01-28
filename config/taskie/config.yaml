@@ -1,0 +1,6 @@
+backends:
+  preference: gogs github
+colors:
+  labels:
+    bug: red
+    enhancement: blue

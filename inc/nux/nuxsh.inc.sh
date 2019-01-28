@@ -10,7 +10,7 @@ nux.nuxsh.language.def() {
 
   local args="((($uarg|$darg|$sarg) *)*)";
 
-  local prefixed_id="([^ :]*:)?($identifier)"
+  local prefixed_id="([^= :]*:)?($identifier)"
 
   .match.line() {
     local type="$1";
@@ -107,7 +107,12 @@ nux.nuxsh.language.def() {
   .identifier() {
     if [ -n "$prefix" ]; then
       local var=_import_prefix_${prefix%:}
-      local prepend=${!var};
+      local prepend;
+      if [ -n "$var" ]; then
+        prepend=${!var};
+      else
+        prepend=$_namespace;
+      fi
       if [ -z "$prepend" ] ; then
         nudsl.process.fail "undefined prefix: $prefix";
       fi

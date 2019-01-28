@@ -9,6 +9,7 @@ nux.use nuxr/repl
   function :run TASK {
     if check:function task.$TASK {
       nux.log debug  "Running task: $TASK";
+      nux.log debug  "Working dir: $(pwd)"
       task.$TASK "$@" # Runs task
     else
       echo "$NUX_SCRIPTNAME: Unrecognized task  '$TASK' not available."
@@ -67,7 +68,6 @@ nux.use nuxr/repl
     topic="$@"
     topic_dot=$(tr " " "." <<< $topic)
     nux.log trace "Displaying topic for: '$topic' '$topic_dot'"
-
     if check:function "task.help.$topic_dot" {
       shift;
       task.help.$topic "$@";

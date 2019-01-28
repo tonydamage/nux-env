@@ -26,7 +26,13 @@ function task.downscale {
 	mkdir -p $TARGET;
 	for image in "$@"; do
 		let "i=i+1"
-		target_file=$TARGET/$(basename $image)
+		name=$(basename $image);
+		target_file=$TARGET/$name;
+		if [ -n "$PRESERVE" ]; then
+			target_dir="${TARGET}/$(dirname "$image")";
+			mkdir -p "$target_dir";
+			target_file="${target_dir}/$name";
+		fi
 		echo "Image: $i/$count Downsampling  $image -> $target_file"
 		convert $image \
 			-filter Lanczos -sampling-factor 1x1 \
