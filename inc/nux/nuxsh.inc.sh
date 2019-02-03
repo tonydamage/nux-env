@@ -165,8 +165,10 @@ nux.nuxsh.language.def() {
       :*) identifier="$_namespace${identifier#:}"
     esac;
     echo "${indent}$identifier() {";
+    echo "${indent}  nux.log trace $identifier: invoked";
      for arg in ${args//,/ }; do
        echo "${indent}  local $arg="'"$1"'";shift;"
+       echo "${indent}  nux.log trace  '  ' arg $arg: "'$'$arg";"
      done
   }
 
