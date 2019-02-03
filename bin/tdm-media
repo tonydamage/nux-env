@@ -1,68 +1,70 @@
-#!/usr/bin/env nux-runner
+#!/usr/bin/env nuxr-nuxsh
 
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
 
-function task.video.change.container {
-	CONTAINER=$1;
-	shift;
-        echo "Using $FFMPEG_OR_LIBAV for conversion."
-	for video in "$@"; do
-		echo "Starting processing Video: $video";
-		$FFMPEG_OR_LIBAV -i "$video" -vcodec copy -acodec copy "${video}.$CONTAINER"
-		echo "Processing done.";
-	done
+QUALITY=${QUALITY:=90}
+
+@namespace task. {
+
+  function :video.change.container {
+    CONTAINER=$1;
+    shift;
+          echo "Using $FFMPEG_OR_LIBAV for conversion."
+    for video in "$@"; do
+      echo "Starting processing Video: $video";
+      $FFMPEG_OR_LIBAV -i "$video" -vcodec copy -acodec copy "${video}.$CONTAINER"
+      echo "Processing done.";
+    done
 }
 
-function task.nikon-mp4 {
-	task.video.change.container mp4 "$@"
-}
+  function :nikon-mp4 {
+    task.video.change.container mp4 "$@"
+  }
 
-function task.downscale {
-	local TARGET=$1; shift;
-	local SIZE=$1; shift
-	local i=0;
-	local count="$#";
-	mkdir -p $TARGET;
-	for image in "$@"; do
-		let "i=i+1"
-		name=$(basename $image);
-		target_file=$TARGET/$name;
-		if [ -n "$PRESERVE" ]; then
-			target_dir="${TARGET}/$(dirname "$image")";
-			mkdir -p "$target_dir";
-			target_file="${target_dir}/$name";
-		fi
-		echo "Image: $i/$count Downsampling  $image -> $target_file"
-		convert $image \
-			-filter Lanczos -sampling-factor 1x1 \
-			-resize "${SIZE}x${SIZE}>" \
-			-quality 90 \
-			$target_file
-	done
-}
+  function :downscale TARGET SIZE {
+    local i=0;
+    local count="$#";
+    mkdir -p $TARGET;
+    for image in "$@"; do
+      let "i=i+1"
+      name=$(basename $image);
+      target_file=$TARGET/$name;
+      if [ -n "$PRESERVE" ]; then
+        target_dir="${TARGET}/$(dirname "$image")";
+        mkdir -p "$target_dir";
+        target_file="${target_dir}/$name";
+      fi
+      echo "Image: $i/$count Downsampling  $image -> $target_file"
+      convert $image \
+        -filter Lanczos -sampling-factor 1x1 \
+        -resize "${SIZE}x${SIZE}>" \
+        -quality 90 \
+        $target_file
+    done
+  }
 
 
-## to:: <jpg|png> <image...>
-##
-## Convert image to
-##
-function task.to {
-	target=$1;
-	shift;
-	if ! nux.check.function "media.to.$target" ; then
-		echo Target type "$target" is not supported.
-		return -1
-	fi
-	for file in "$@"; do
-		target_dir=$(dirname "$file");
-		target_file=$(basename "$file" | sed -re 's/\.[a-z0-9_]+$//g' -e "s/\$/.$target/g" );
-		target_full="$target_dir/$target_file";
-		media.to.$target "$file" "$target_full"
-		echo $file $target_file
-	done
+  ## to:: <jpg|png> <image...>
+  ##
+  ## Convert image to
+  ##
+  function :to target {
+    if ! nux.check.function "media.to.$target" ; then
+      echo Target type "$target" is not supported.
+      return -1
+    fi
+    for file in "$@"; do
+      target_dir=$(dirname "$file");
+      target_file=$(basename "$file" | sed -re 's/\.[a-z0-9_]+$//g' -e "s/\$/.$target/g" );
+      target_full="$target_dir/$target_file";
+      media.to.$target "$file" "$target_full"
+      echo $file $target_file
+    done
+  }
+
 }
 
 function media.to.jpg {
-	convert "$1" -quality 90 -auto-orient "$2"
+  convert "$1" -quality $QUALITY -auto-orient "$2"
 }
