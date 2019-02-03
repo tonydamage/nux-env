@@ -132,6 +132,9 @@ if [ -n  "$NUX_SCRIPT" ]; then
 
   NUX_SCRIPTNAME=$(basename "$NUX_SCRIPT")
 
+  NUX_APP_NAME="${NUX_APP_NAME:=$NUXR_APP_NAME}"
+  NUX_APP_DIR="${NUX_APP_DIR:=$NUXR_APP_DIR}"
+
   nux.log trace "NUX_SCRIPT env: " $(set | grep NUX_SCRIPT)
   if [ -z "$NUX_NO_INCLUDE" ]
   then
@@ -143,6 +146,9 @@ if [ -n  "$NUX_SCRIPT" ]; then
     nux.nuxsh.use "$NUX_SCRIPT" "/tmp/$compilefile.nuxr.nuxsh";
     NUX_NO_INCLUDE="no-include"
   fi
+
+
+
   nuxr.main "$@"
 else
 

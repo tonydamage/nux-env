@@ -261,7 +261,7 @@ function task.capture {
 nuxr.repl.expose cd pwd ls find
 
 nuxr.repl.prompt() {
-  echo "${nc_green}$NUX_APPNAME${nc_end}:${nc_blue}$(pwd)${nc_end}> "
+  echo "${nc_green}$NUX_SCRIPTNAME${nc_end}:${nc_blue}$(pwd)${nc_end}> "
 }
 
 function nuxfs.template.list {

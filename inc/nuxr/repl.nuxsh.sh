@@ -22,7 +22,7 @@
   }
 
   function :prompt {
-    echo "${nc_green}$NUX_APPNAME${nc_end}> "
+    echo "${nc_green}$NUX_SCRIPTNAME${nc_end}> "
   }
 
 }

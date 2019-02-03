@@ -77,7 +77,7 @@ nux.use nuxr/repl
     else
       nuxr.task.help.comment "$NUX_SCRIPT" "$topic" \
         || nuxr.task.help.comment "$NUX_RUNNER" "$topic" \
-        || echo "Help topic $1 not found. Run '$NUX_APPNAME help'  to see topics."
+        || echo "Help topic $1 not found. Run '$NUX_SCRIPTNAME help'  to see topics."
     }
   }
 

@@ -87,14 +87,14 @@ function nux.cfg.write {
 ##   by library for customization of path format.
 ##
 function nux.cfg.dir.global {
-  echo "$HOME/.config/$NUX_APPNAME"
+  echo "$HOME/.config/$NUX_APP_NAME"
 }
 ## nux.cfg.dir.dist::
 ##   Returns path of *dist* config directory. SHOULD be overriden
 ##   by library for customization of path format.
 
 function nux.cfg.dir.dist {
-  echo "$NUX_ENV_DIR/config/$NUX_APPNAME"
+  echo "$NUX_APP_DIR/config/$NUX_APP_NAME"
 }
 ## nux.cfg.dir.local::
 ##   Returns path of *local* config directory. SHOULD be overriden
