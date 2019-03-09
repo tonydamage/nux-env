@@ -1,15 +1,31 @@
 #!/usr/bin/env bash
 
+nuweb_start=$(date +%s.%N)
+nuweb_stop() {
+  stop=$(date +%s.%N)
+  nux.log info Finished: "${REQUEST_URI} $(echo "$stop - $nuweb_start" | bc)"
+}
+trap nuweb_stop EXIT
+
+
 readonly NUWEB_BIN_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
-source $NUWEB_BIN_DIR/../inc/nux-base.inc.sh
+source $NUWEB_BIN_DIR/../inc/nux.inc.sh
+
+
+
 
 nux.use nuweb
+umask 0002
 
 dirty.url.decode() {
   sed -e "s/%20/ /gi" <<< "$@"
 }
+
 nux.log.level debug
-NUWEB_SCRIPT_URI="${SCRIPT_FILENAME#$DOCUMENT_ROOT}" \
-NUWEB_MAYBE_PWD="$DOCUMENT_ROOT$(dirty.url.decode "${REQUEST_URI%%\?*}")" \
-NUWEB_REQUEST_PATH="${REQUEST_URI%%\?*}" \
-  source "$1"
+
+DOCUMENT_ROOT=${DOCUMENT_ROOT%/}
+NUWEB_SCRIPT_URI="${SCRIPT_FILENAME#$DOCUMENT_ROOT}"
+NUWEB_SCRIPT_DIR_URI="${NUWEB_SCRIPT_URI%/*}"
+NUWEB_MAYBE_PWD="$DOCUMENT_ROOT$(dirty.url.decode "${REQUEST_URI%%\?*}")"
+NUWEB_REQUEST_PATH="${REQUEST_URI%%\?*}"
+nux.dsl.exec nux.nuxsh.language.def "$1"

@@ -20,13 +20,18 @@
 ##
 ##
 nuweb.router.tryexec.concrete() {
-  full_spec=$1;
+  method="$1";
+  full_spec="$2";
+  func="$3";
+  shift; shift; shift;
+  if [ "$REQUEST_METHOD" != "$method" ]; then
+    return 1;
+  fi
+
   path_spec=${full_spec%%\?*}
   query_spec=${full_spec#$path_spec}
   query_spec=${query_spec#\?}
 
-  func=$2;
-  shift; shift;
   nux.log trace  "Checking Path Spec: '$path_spec', Query Spec: '$query_spec' Function:$func Additional Args:$@" >&2
 
   IFS='/' read -ra spec_components <<< "$path_spec"
@@ -41,12 +46,12 @@ nuweb.router.tryexec.concrete() {
     elif [ "$spec" == "@" ]; then
       path_args="$path_args $path";
     elif [ "$spec" != "$path" ] ; then
-      return -1
+      return 1
     fi
     let i=$i+1
   done
   if [ $i -lt "${#spec_components[@]}" ] ; then
-    return -1;
+    return 1;
   fi
   if [ -n "$query_spec" ]; then
   IFS='&' read -ra query_components <<< "$query_spec"
@@ -59,27 +64,29 @@ nuweb.router.tryexec.concrete() {
     else
       if [ -z "$value" ]; then
         #echo "$def $value is empty." >&2;
-        return -1;
+        return 1;
       elif [ "$valueDef" == "@" ]; then
         query_args="$query_args $value"
       elif [ "$value" != "$valueDef" ]; then
         #echo "$def $value != $valueDef" >&2;
-        return -1;
+        return 1;
       fi
     fi
   done
   fi
   path_c=$(dirty.url.decode "$path_c")
-  $func "$@" $path_args "$path_c" $query_args
+  nuweb.http.query.with_env nuweb.http.post.with_env $func "$@" $path_args "$path_c" $query_args
   exit 0
 
 }
 
-
-nuweb.get() {
-  nuweb.router.tryexec.concrete $@;
+nuweb.router.get() {
+  nuweb.router.tryexec.concrete GET "$@";
 }
 
+nuweb.router.post() {
+  nuweb.router.tryexec.concrete POST "$@";
+}
 
 ##
 ## nuweb.router.exec:: <definition> [path]
@@ -99,6 +106,7 @@ nuweb.router.exec() {
     path="/"
   fi
 
+  nux.log debug "Method: '$REQUEST_METHOD' Path: '$path'"
   IFS='/' read -ra PATH_COMPONENTS <<< "$path"
 
   $definition

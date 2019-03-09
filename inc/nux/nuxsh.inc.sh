@@ -1,16 +1,17 @@
 nux.use nux/dsl
 
 nux.nuxsh.language.def() {
-  local identifier='[^ ;{}=()$]+'
+  local identifier_char='[^ ;{}=()$:]'
+  local identifier='[^ ;{}=()$:]+'
   local comment='(( *)(#.*))?'
   local whitespace="([ ]*)"
-  local uarg="([^ #\{\}\"'\"'\"';]+)";
+  local uarg="([^ #{}\"'\"'\"';]+)";
   local sarg="('\"'\"'[^'\"'\"']+'\"'\"')";
   local darg='("[^"]*")';
 
   local args="((($uarg|$darg|$sarg) *)*)";
 
-  local prefixed_id="([^ :]*:)?($identifier)"
+  local prefixed_id="($identifier_char*:)?($identifier)"
 
   .match.line() {
     local type="$1";
@@ -34,11 +35,11 @@ nux.nuxsh.language.def() {
   .match.line if_start "(if)( +)$prefixed_id( +)$args?( *)(\{)" \
           keyword indent2 prefix identifier indent3 args - - - - - indent4 syntax3
 
-  .match.line function_start "((function)( +))($identifier)((\()|( *))(($identifier,? *)*)(\))?( *)(\{)" \
+  .match.line function_start "((function)( +))(:?$identifier)((\()|( *))(($identifier,? *)*)(\))?( *)(\{)" \
       - keyword indent2 identifier - syntax indent3 args - syntax2 indent4 syntax3
 
-  .match.line block_start "($identifier)(( +)$args)?( *)(\{)" \
-      identifier - indent2 args - - - - - indent3 syntax3
+  .match.line block_start "$prefixed_id(( +)$args)?( *)(\{)" \
+      prefix identifier - indent2 args - - - - - indent3 syntax3
 
   .match.line statement "$prefixed_id(( +)$args)?( *)(;?)"\
       prefix identifier - indent2 args - - - - - indent3 syntax2
@@ -69,16 +70,26 @@ nux.nuxsh.language.def() {
     echo ${_block_type[${#_block_type[@]}-1]}
   }
 
+  function .block.args.get {
+    echo ${_block_args[${#_block_args[@]}-1]}
+  }
+
   function .block.pop {
     unset _block_type[${#_block_type[@]}-1]
+    unset _block_args[${#_block_args[@]}-1]
   }
 
   function .block.push {
-    _block_type[${#_block_type[@]}]="$1"
+    local block="$1";shift;
+    _block_type[${#_block_type[@]}]="$block"
+    _block_args[${#_block_args[@]}]="$@"
   }
 
   .match.block_start.plan() {
-    .block.push $identifier;
+    nux.log debug "P '$identifier' '$prefix' "
+    local identifier=$(.identifier)
+    nux.log debug "Block '$identifier' '$prefix' "
+    .block.push "$identifier" "$args";
     nux.exec.or .block.$identifier.start.plan .block.start.plan
   }
 
@@ -86,7 +97,7 @@ nux.nuxsh.language.def() {
     local identifier=$(.block.get)
     if [ "$identifier" == "$blocktrac_root" ]; then
       nux.dsl.process.fail "unnecessary block end '$line' "
-      return -1;
+      return 1;
     fi
     nux.exec.or .block.$identifier.end.plan .block.end.plan
     .block.pop;
@@ -99,8 +110,8 @@ nux.nuxsh.language.def() {
   }
 
   .action.prefix() {
-    echo "# prefix: $1 $2"
-    eval "_import_prefix_$1='$2'";
+    echo "# prefix: $1 ${2%.}"
+    eval "_import_prefix_$1='${2%.}'";
   }
 
 
@@ -109,20 +120,27 @@ nux.nuxsh.language.def() {
       local var=_import_prefix_${prefix%:}
       local prepend=${!var};
       if [ -z "$prepend" ] ; then
-        nudsl.process.fail "undefined prefix: $prefix";
+        nux.dsl.process.fail "undefined prefix: $prefix";
+        return;
       fi
-      echo "$prepend$identifier"
+      echo "$prepend.$identifier"
     else
-      echo "$identifier"
+      cat <<< "$identifier"
     fi
   }
 
 
   .match.statement.plan() {
-    echo "${indent}$(.identifier) ${args}"
+    identifier=$(.identifier);
+    nux.exec.or .statement.$identifier.plan .statement.plan
+
   }
 
+  .statement.plan() {
+    echo "${indent}$identifier ${args}"
+  }
   .match.rule.plan() {
+    echo "rule " >&2;
     eval ".action.${rule//:/.} $args";
   }
 
@@ -156,8 +174,8 @@ nux.nuxsh.language.def() {
   .match.function_start.plan() {
     .block.push function
     case $identifier in
-      .*) ;;
-      :*) identifier="$_namespace${identifier#:}"
+      :)  identifier="$_namespace";;
+      :*) identifier="$_namespace.${identifier#:}";;
     esac;
     echo "${indent}$identifier() {";
      for arg in ${args//,/ }; do
@@ -169,7 +187,7 @@ nux.nuxsh.language.def() {
     case $identifier in
       function) echo "$line";;
       *"()") echo "$line";;
-      *) nudsl.process.fail Invalid block syntax: "'$identifier' '$line'";
+      *) nux.dsl.process.fail Invalid block syntax: "'$identifier' '$line'";
     esac;
   }
 
@@ -189,6 +207,10 @@ nux.nuxsh.language.def() {
       """
   }
 
+  .action.syntax() {
+    nux.use "$1.syntax"
+  }
+
   .action.block.rewrite.call() {
     echo "# block:rewrite:block:call $@"
     eval """.block.$1.start.plan() {
@@ -200,7 +222,55 @@ nux.nuxsh.language.def() {
     }
     """
   }
+
+  .action.block.rewrite.call2() {
+    echo "# block:rewrite:block:call2 $@"
+    nux.nuxsh.block.rewrite.call "$1" "$2" "$3"
+  }
+
 }
+
+nux.nuxsh.block.rewrite.call() {
+  eval """.block.$1.start.plan() {
+    echo \"\${indent}\"'${2}'\" \$args\"
+  }
+
+  .block.$1.end.plan() {
+    local args=\"\$(.block.args.get)\";
+    echo \"\${indent}\"'${3}' \"\$args\"
+  }
+  """
+}
+
+nux.nuxsh.block.rewrite.func() {
+  eval """
+    .block.$1.start.plan() {
+       ${2} \"\${indent}\" \"\$args\"
+    }
+    .block.$1.end.plan() {
+      ${3} \"\${indent}\" \"\$args\"
+    }
+  """
+}
+
+nux.nuxsh.statement.rewrite.func() {
+  eval """
+    .statement.$1.plan() {
+       ${2} \"\${indent}\" \"\$args\"
+    }
+    """
+}
+
+nux.nuxsh.statement.rewrite.call() {
+  eval """.statement.$1.plan() {
+    nux.nuxsh.statement.rewrite.call0 '$2' '$3'
+  }
+  """
+}
+nux.nuxsh.statement.rewrite.call0() {
+  echo "${indent}${1} $args ${2}"
+}
+
 
 function nux.nuxsh.use {
 	local file="$1";

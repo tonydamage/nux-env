@@ -2,7 +2,7 @@
 ###
 #
 #
-@namespace nuxr.repl. {
+@namespace nuxr.repl {
   function :process {
     backendFunc=task.$command;
     if nux.check.function repl.command.$command; then
@@ -27,7 +27,7 @@
 
 }
 
-@namespace repl.command. {
+@namespace repl.command {
   ##
   ##  repl.command.::
   ##    fallback command which does nothing if user just presses enter.
@@ -54,7 +54,7 @@
 }
 
 
-@namespace nuxr.repl.completer. {
+@namespace nuxr.repl.completer {
 
   function :search.tasks  {
     set | grep -G "^task\.$1.* ()" \

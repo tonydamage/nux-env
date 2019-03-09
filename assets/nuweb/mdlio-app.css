@@ -1,0 +1,332 @@
+@font-face {
+  font-family: "Material Design Icons";
+  src: url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.eot?v=1.9.32");
+  src: url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.eot?#iefix&v=1.9.32") format("embedded-opentype"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.woff2?v=1.9.32") format("woff2"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.woff?v=1.9.32") format("woff"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.ttf?v=1.9.32") format("truetype"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.svg?v=1.9.32#materialdesigniconsregular") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.item .mdl-card_title {
+  padding: 8px;
+  width: calc( 100% - 16px );
+}
+.item .mdl-card__title-text {
+  text-decoration:none;
+  font-family: "Roboto","Helvetica","Arial",sans-serif
+}
+
+
+.item.type-image.thumb .card-no-media {
+  display:none;
+}
+
+.item.type-image.thumb:hover .card-no-media {
+  display:block;
+}
+
+.item.type-person.thumb .card-title-wrapper {
+  height:0px;
+  position:relative;
+  overflow:visible;
+}
+
+
+.item .card-title-body {
+  width: 100%;
+  
+
+}
+
+.item.type-person.thumb .card-title-body,
+.item.type-image.thumb .card-title-body {
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+  text-shadow: 0px 0px 7px rgba(0, 0, 0, 1);
+  bottom: 0px;
+  position: absolute;
+}
+
+.item.type-image.thumb .card-title-body {
+  display:none;
+}
+
+.item.type-person:hover .card-title-body,
+.item.type-image:hover .card-title-body {
+  display: block;
+}
+
+input.material-icons[type="submit"] {
+  font-family: "Material Icons";
+}
+
+.file .mdl-card_title-text {
+  word-break:break-all;
+}
+
+
+.file  .title:before {
+  font-family: "Material Design Icons";
+  margin-right:8px;
+  content: "\f214";
+}
+
+.file.type-directory .title:before {
+  content: "\f24b";
+}
+
+.file.type-person .title:before {
+  content: "\f004";
+}
+
+.file.type-image .title:before {
+
+  content: "\f21f";
+}
+
+.file.type-video .title:before {
+  content: "\f22b";
+}
+
+.file[data-mime="application/pdf"] .title:before {
+  content: "\f225"
+}
+
+
+
+.item .mdl-card.as-dialog {
+  position:fixed;
+  display:block;
+  top:100px;
+  /* max-width: 960px; */
+  width: calc( 100% - 140px);
+  height: calc( 100% - 140px);
+  z-index:6;
+}
+
+.item .mdl-card.as-dialog:before {
+  position:fixed;
+  display:block;
+  top:0px;
+  left:0px;
+  background:#000;
+  width:10%;
+  height:10%;
+  z-index:5;
+  content:"";
+}
+
+
+
+
+
+.selection-bar {
+  display:block !important;
+  opacity:0;
+  transform: translateY(-70px);
+}
+
+
+.selection-bar,
+.selection-bar .mdl-layout__drawer-button {
+  color:rgba(0,0,0,.87);
+}
+
+.selection-mode .selection-bar {
+  display:block;
+  transform: translateY(0px);
+  opacity:1;
+}
+
+.selection-mode .selectable .action.select,
+.selectable:hover .action.select {
+  display:block;
+  opacity:1;
+}
+
+.selectable>.action.select {
+  position:absolute;
+  left:-8px;
+  top:-12px;
+  background: #fff;
+  border-radius: 50%;
+  width:24px;
+  height:24px;
+  min-width:24px;
+  box-shadow:0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+  z-index: 2;
+  
+  /*display:none;*/
+  opacity:0;
+}
+
+.selection-bar, 
+.selectable .action.select {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.item .mdl-card__actions {
+  display:none;
+}
+
+.mdl-card.upgraded .mdl-card__actions {
+  display:block;
+}
+
+
+
+
+.action.pin {
+  /* position:absolute; */
+  /* top:0px; */
+  /* right: 8px; */
+}
+
+.action.pin:before {
+  font-family: "Material Design Icons";
+  content: "\f403";
+  line-height:24px;
+}
+
+
+.item .mdl-card__actions {
+  text-align:right;
+  visibility: hidden;
+  opacity:0;
+  transition: transform 0.3s ease, opacity 0.3s ease; 
+
+}
+
+.item .action.select i.material-icons {
+  font-size:14px;
+}
+
+.item.selected {
+  background:#555;
+  /*outline: 1px solid #555;*/
+  box-shadow: 0 0 8px rgba(0,0,0,0.87);
+}
+
+
+
+.item:hover .mdl-card__actions {
+  visibility: visible;
+  opacity:1;
+}
+
+
+.item.selected .action.select {
+  background: #555;
+  color: #fff;
+  display:block;
+}
+
+.item .mdl-button--icon {
+  min-width:32px;
+}
+
+.gallery {
+  width: calc(100% - 16px);
+  padding: 0px;
+}
+
+.breadcrumb {
+  margin-top: 24px;
+  display:block;
+}
+.breadcrumb + h1 {
+  margin-top:0px;
+}
+
+
+.gallery .item.mdl-card {
+  min-height: auto;
+}
+
+.gallery .item .mdl-card_media img {
+  width:100%;
+  height:auto;
+}
+
+.gallery .item.no-thumb .mdl-card_media a {
+  display: block;
+  /*min-height: 100px;*/
+  width:100%;
+  background: rgba(255,255,255,0.25);
+  text-decoration:none;
+  color:#fff;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.item .mdl-card {
+  width:100%;
+  min-height:48px;
+}
+
+/*
+.gallery .item.no-thumb.type-directory .mdl-card_media a::before {
+  content: "folder";
+  font-family: "Material Icons";
+  margin-right:8px;
+  font-size:128px;
+  line-height:128px;
+  text-decoration:none;
+
+}
+*/
+
+.main-width {
+    max-width: 960px;
+    margin: auto;
+    position: relative;
+}
+
+@media (max-width: 976px) {
+  .main-width {
+    margin:0 8px;
+  }
+}
+
+
+#scooter {
+  position: absolute;
+  overflow: hidden;
+  top:0px;
+  width:100%;
+  bottom:0px;
+  height:0px;
+}
+
+#sizer {
+  background:rgba(0,0,0,0.10);
+  position:relative;
+  height:100%;
+}
+
+#sizer .gutter {
+  background:rgba(0,0,0,0.1);
+  height:100%;
+}
+
+/* Layout Hack */
+
+.mdl-layout {
+    overflow: visible;
+}
+.mdl-layout__drawer {
+    position: fixed;
+}
+.mdl-layout__content {
+    display: block;
+    overflow: visible;
+    margin-top: 64px;
+}
+.is-small-screen .mdl-layout__content {
+    margin-top: 56px;
+}
+.mdl-layout__header {
+    position: fixed;
+}
+.mdl-layout__obfuscator {
+    position: fixed;
+}

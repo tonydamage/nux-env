@@ -98,11 +98,11 @@ nux.dsl.plan() {
   local file="$2";
   local cached="${3:-$file${NUDSL_CACHE_SUFFIX}}";
   if [ "$file" -ot "$cached" ]; then
-    nux.log debug No need to recompile.
+    nux.log trace No need to recompile '$file'.
     return;
   fi
 
-  nux.log debug Needs regeneration, creating new version.
+  nux.log trace File '$file' Needs regeneration, creating new version.
 
   local dirname=$(dirname "$cached")
   mkdir -p "$dirname";
@@ -110,9 +110,9 @@ nux.dsl.plan() {
   if (nux.dsl.process plan "$language" "$file" > "$execution_plan") ; then
     mv -f "$execution_plan" "$cached";
   else
-    echo "Plan could not be generated. See errors."
+    echo "Plan for $file could not be generated. See errors." >&2
     rm "$execution_plan"
-    return -1;
+    return 1;
   fi
 }
 
@@ -136,7 +136,7 @@ nux.dsl.process0() {
       fi
     done
     if [ -n "$process_failed" ]; then
-      return -1;
+      return 1;
     fi
   done;
 }

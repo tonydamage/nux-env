@@ -13,7 +13,7 @@ nux.use nuxr/repl
     else
       echo "$NUX_SCRIPTNAME: Unrecognized task  ''$TASK' not available."
       echo "Try '$NUX_SCRIPTNAME help' for more information."
-      return -1
+      return 1
     }
   }
 
@@ -94,7 +94,7 @@ nux.use nuxr/repl
         | nux.help.shelldoc
         return 0
       else
-        return -1
+        return 1
       }
     }
 }
