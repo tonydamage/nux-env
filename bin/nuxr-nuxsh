@@ -141,9 +141,11 @@ if [ -n  "$NUX_SCRIPT" ]; then
   	nux.log debug  "Including script: $NUX_SCRIPT"
     nux.log trace "NUX_SCRIPT env: " $(set | grep NUX_SCRIPT)
 
-    compilefile=$(realpath nux-env | md5sum | cut -d" " -f1)
+    compilefile=$(realpath "$NUX_SCRIPT" | md5sum | cut -d" " -f1)
     #FIXME: check if nux_cache should be used.
-    nux.nuxsh.use "$NUX_SCRIPT" "/tmp/$compilefile.nuxr.nuxsh";
+    compilefile="/tmp/$compilefile.nuxr.nuxsh"
+    nux.log debug "Compiled script:" $compilefile
+    nux.nuxsh.use "$NUX_SCRIPT" "$compilefile";
     NUX_NO_INCLUDE="no-include"
   fi
 
