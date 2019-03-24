@@ -6,7 +6,7 @@ NC_LOG_color_error=$NC_LightRed
 NC_LOG_color_warning=$NC_Yellow
 NC_LOG_color_debug=$NC_White
 
-NC_LOG_current=3
+NC_LOG_current=${NC_LOG_current:=3}
 
 NC_LOG_id_none=0
 NC_LOG_id_error=1
