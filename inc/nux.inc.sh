@@ -4,6 +4,8 @@ readonly NUX_INC_DIR=$(dirname $(realpath  ${BASH_SOURCE[0]}))
 readonly NUX_ENV_DIR=$(dirname $NUX_INC_DIR)
 readonly NUX_CACHE_DIR="$NUX_ENV_DIR/cache"
 
+source "$NUX_INC_DIR/nux/log.inc.sh"
+
 # Color definitions
 
 
@@ -17,12 +19,6 @@ function nux.echo.error {
 
 function nux.echo.warning {
 	echo -e "${NC_warning}"$@" ${NC_No}";
-}
-
-## nux.use:: <library>
-function nux.use {
-  local incfile="$1.inc.sh"
-  source "$NUX_INC_DIR/$incfile"
 }
 
 function nux.fatal {
@@ -47,7 +43,9 @@ function nux.require {
 
 }
 
+## nux.use:: <library>
 function nux.use {
+	nux.log trace "nux.use: Including: $1"
   local incfile="$1.inc.sh"
 	local nuxshfile="$1.nuxsh.sh"
 	#FIXME: Do not use same file twice.
@@ -90,9 +88,6 @@ function nux.dirty.urlencode {
     echo -n "$1" | sed "s/ /%20/g"
 }
 
-
-
-
 function nux.url.parse {
   format=${2:-"protocol:\2\nuser:\4\nhost:\5\nport:\7 \npath:\8"}
   echo "$1" | sed \
@@ -100,6 +95,5 @@ function nux.url.parse {
 
 }
 
-nux.use nux/log
 nux.use nux/check
 nux.use nux/nuxsh
