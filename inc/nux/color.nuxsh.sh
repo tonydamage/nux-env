@@ -1,3 +1,5 @@
+nux.use nux/log
+
 if [ -t 1 ] {
   readonly nc_bold=`tput setaf 0`
   readonly nc_bg_bold=`tput setab 0`
@@ -39,4 +41,7 @@ if [ -t 1 ] {
   readonly NC_White=$nc_white
 
   readonly NC_error=$NC_Red
+
 }
+
+nux.log trace Terminal colors enabled

@@ -1,16 +1,20 @@
 ## ##Logging
 
 # Color for message levels
-NC_LOG_color_info=$NC_LightGray
-NC_LOG_color_error=$NC_LightRed
-NC_LOG_color_warning=$NC_Yellow
-NC_LOG_color_debug=$NC_White
+if [ -t 1 ]; then
+  NC_LOG_color_1='\033[1;31m'
+  NC_LOG_color_2=`tput setaf 3`
+  NC_LOG_color_3='\033[0;37m'
+  NC_LOG_color_4=`tput setaf 7`
+  NC_LOG_No=`tput sgr0`
+fi
 
 NC_LOG_current=${NC_LOG_current:=3}
 
 NC_LOG_id_none=0
 NC_LOG_id_error=1
 NC_LOG_id_warning=2
+NC_LOG_id_warn=2
 NC_LOG_id_info=3
 NC_LOG_id_debug=4
 NC_LOG_id_trace=5
@@ -33,11 +37,11 @@ NC_LOG_id_trace=5
 function nux.log {
   local level=$1
   local message=$2
-  local color=NC_LOG_color_$level
   local level_num=NC_LOG_id_$level
+  local color=NC_LOG_color_${!level_num}
   shift;
   if [  ${!level_num} -le $NC_LOG_current  ]; then
-    echo -e "${!color}[$level]$NC_No $*$NC_No" >&2
+    echo -e "${!color}[$level]$NC_LOG_No $*$NC_LOG_No" >&2
   fi
 }
 
@@ -50,3 +54,5 @@ function  nux.log.level {
   local level_id=NC_LOG_id_$level
   NC_LOG_current=${!level_id}
 }
+
+nux.log trace Nux Logger included
