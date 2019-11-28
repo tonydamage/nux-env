@@ -3,7 +3,7 @@ function nuxfs.relative {
 }
 
 function nuxfs.relative-to-pwd {
-	realpath -m -s "$1" --relative-to "$(realpath "$(pwd)")"
+	realpath -Lms "$1" --relative-to "$(pwd)"
 }
 
 function nuxfs.error {

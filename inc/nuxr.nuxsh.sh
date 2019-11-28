@@ -7,6 +7,7 @@ nux.use nuxr/repl
 
 @namespace nuxr. {
   function :run TASK {
+    # FIXME: Add default task
     if check:function task.$TASK {
       nux.log debug  "Running task: $TASK";
       nux.log debug  "Working dir: $(pwd)"
