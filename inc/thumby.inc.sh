@@ -1,5 +1,7 @@
 nux.use nux.mime
 
+type gm /dev/null 2>&1 && NUX_MAGICK=gm
+
 function thumby.name.shared() {
   echo $(basename "$1"|md5sum|cut -d " " -f1).png
 }
@@ -81,7 +83,7 @@ function thumby.thumb.get() {
 
     $preexec "$path"
     nux.log info "Source is : $source, Streamer is $streamer";
-    $streamer "$path" | convert -thumbnail '256x256>' -strip "$source" "$thumbpath" >&2
+    $streamer "$path" | $NUX_MAGICK  convert -thumbnail '256x256>' -strip "$source" "$thumbpath" >&2
     $postexec "$path"
     echo $thumbpath;
   fi
@@ -89,7 +91,7 @@ function thumby.thumb.get() {
 }
 
 function thumby.thumb.generate() {
-  convert -thumbnail '256x256>' -strip "$path" "$thumbpath" >&2
+  $NUX_MAGICK convert -thumbnail '256x256>' -strip "$path" "$thumbpath" >&2
 }
 
 function thumby.get.thumb() {

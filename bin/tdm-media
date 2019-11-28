@@ -1,7 +1,9 @@
 #!/usr/bin/env nuxr-nuxsh
 
+
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
+type gm /dev/null 2>&1 && NUX_MAGICK=gm
 
 QUALITY=${QUALITY:=90}
 
@@ -36,10 +38,10 @@ QUALITY=${QUALITY:=90}
         target_file="${target_dir}/$name";
       fi
       echo "Image: $i/$count Downsampling  $image -> $target_file"
-      convert $image \
+      $NUX_MAGICK convert $image \
         -filter Lanczos -sampling-factor 1x1 \
         -resize "${SIZE}x${SIZE}>" \
-        -quality 90 \
+        -quality $QUALITY \
         $target_file
     done
   }
@@ -66,5 +68,5 @@ QUALITY=${QUALITY:=90}
 }
 
 function media.to.jpg {
-  convert "$1" -quality $QUALITY -auto-orient "$2"
+  $NUX_MAGICK convert "$1" -quality $QUALITY -auto-orient "$2"
 }
