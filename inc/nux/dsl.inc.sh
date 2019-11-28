@@ -107,7 +107,7 @@ nux.dsl.plan() {
 
   local dirname=$(dirname "$cached")
   mkdir -p "$dirname";
-  local execution_plan=$(mktemp "$dirname/.nux.dsl.XXXX")
+  local execution_plan=$(mktemp -p "$dirname" .nux.dsl.XXXXXXXX)
   if (nux.dsl.process plan "$language" "$file" > "$execution_plan") ; then
     mv -f "$execution_plan" "$cached";
   else
