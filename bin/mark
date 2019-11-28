@@ -82,10 +82,11 @@ MARK_PREFIX=""
 ##     Marks **files** with specific **mark**.
 ##     This creates symlinks for files in **mark** folder.
   function :multiple mark {
+    pwd=$(pwd)
     mark_root=$(mark.dir "$pwd")
     while [ "$#" -gt 0 ]; do
       item="$1"; shift;
-      mark.mark "$mark_root" "$item" "$MARK_PREFIX$mark"
+      mark.mark "$mark_root" "$pwd/$item" "$MARK_PREFIX$mark"
     done
   }
 
