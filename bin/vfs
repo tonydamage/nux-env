@@ -56,14 +56,20 @@ function vfs.path.real file {
   function :switch storage {
     target="$(vfs.path "$storage")"
     nux.log debug "Target path $target"
-    for f in "$@" ; do
-      relative_path=$(realpath --relative-to="$CURRENT_MOUNT" $f);
-      target_dir="$target/${relative_path%/*}"
-      real_file="$(vfs.path.real "$relative_path")"
-      nux.log debug "Target directory: $target_dir";
-      nuxfs.info $f moving from "$NC_LightPurple${real_file}$NC_No" to "$NC_LightPurple$target_dir"
-      mkdir -p "$target_dir";
-      mv "$real_file" "$target_dir";
+    for arg_path in "$@" ; do
+      rooted_path="/$(realpath -m --relative-to="$CURRENT_MOUNT" ${arg_path%/})";
+      target_dir="${target}${rooted_path%/*}"
+      real_file="$(vfs.path.real "$rooted_path")"
+      nux.log trace "Rooted path:   $rooted_path";
+      nux.log trace "Real file:     $real_file";
+      nux.log trace "Target dir:    $target_dir";
+      if [ -n "$real_file" ]; then
+        mkdir -p "$target_dir";
+        nuxfs.info $arg_path moving from "$NC_LightPurple${real_file}$NC_No" to "$NC_LightPurple$target_dir"
+        mv "$real_file" "$target_dir";
+      else
+        nuxfs.error $arg_path does not exists.
+      fi
     done
   }
 ##   mount:: <target> <name:path> [<name:path>+]
@@ -82,7 +88,7 @@ function vfs.path.real file {
       mount_paths="$mount_paths:${source_path}"
       echo "$source_name $source_path" >> "$source_tempfs/.vfs.sources"
     done
-    echo "temp $source_tempfs" >> "$source_tempfs/$VFS_SOURCES_FILE"
+    echo "temp $source_tempfs" >> "$source_tempfs/$VFS_SOURCES_FILE="
 
     mergerfs_options="$source_tempfs:${mount_paths}"
     nux.log debug "MergerFS command:" $mergerfs_options;
@@ -91,7 +97,7 @@ function vfs.path.real file {
   }
 ##   unmount:: <target>
 ##     Unmounts target VFS filesystem.
-  function :unmount {
+  function :unmount target {
     fusermount -u "$target"
     nuxfs.info "${CURRENT_SOURCES[temp]}" removing temporary metadata.
     rm -rf "${CURRENT_SOURCES[temp]}"
