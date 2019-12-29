@@ -21,10 +21,11 @@ function vfs.path name {
 
 function vfs.path.real file {
   for root in "${CURRENT_SOURCES[@]}" ; do
-    if [ -e "$root/$file" ] {
-      echo $root/$file;
+    nux.log trace "Testing $root$file"
+    if [ -e "${root}${file}" -o -h "${root}${file}" ]; then
+      echo ${root}${file};
       return 0;
-    }
+    fi
   done
 }
 
@@ -57,7 +58,7 @@ function vfs.path.real file {
     target="$(vfs.path "$storage")"
     nux.log debug "Target path $target"
     for arg_path in "$@" ; do
-      rooted_path="/$(realpath -m --relative-to="$CURRENT_MOUNT" ${arg_path%/})";
+      rooted_path="/$(realpath -Lms --relative-to="$CURRENT_MOUNT" ${arg_path%/})";
       target_dir="${target}${rooted_path%/*}"
       real_file="$(vfs.path.real "$rooted_path")"
       nux.log trace "Rooted path:   $rooted_path";
