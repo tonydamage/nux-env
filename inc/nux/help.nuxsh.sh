@@ -1,5 +1,9 @@
 #!/usr/bin/env nuxsh
 @namespace nux.help. {
+
+## nux.help.shelldoc::
+##  Reads input from std-in and perform terminal-based colorization based on
+##  shelldoc format.
   function :shelldoc {
     sed -r \
       -e "s/^## ?(.*)/${NC_White}\1${NC_No}/gI" \

@@ -17,8 +17,8 @@
 ## #Usage
 ##
 ## Basic usage of nux.cfg is really simple:
-##    - use *nux.cfg.read* function to read configuration value
-##    - use *nux.cfg.write* to write configuration value.
+##    - use *:read* function to read configuration value
+##    - use *:write* to write configuration value.
 ##
 ## If you are using *nux-runner* for your scripts, it automaticly add *config*
 ## task which can be used by user to read / modify configuration values.
@@ -31,13 +31,14 @@ nux_cfg_config_file=config.yaml
 ## #Public functions:
 ##
 
+@namespace nux.cfg. {
 
-## nux.cfg.read:: [<store>] <path>
+## :read:: [<store>] <path>
 ##   Reads configuration value stored at *path* from specified *store*.
 ##   If no store is specified returns first found value in all stores
 ##   in following order *local, global, dist*.
 ##
-function nux.cfg.read {
+function :read {
   nux.log trace "Reading configuration $@"
   maybe_store="$1";
   local read_from="local global dist"
@@ -61,125 +62,125 @@ function nux.cfg.read {
 
 }
 
-## nux.cfg.write::  <global | local> <path> <value>
+## :write::  <global | local> <path> <value>
 ##   Writes specified value to *global* or *local* store.
 ##   If configuration file does not exists, it creates it.
 ##
-function nux.cfg.write {
-  store="$1";
-  nux.log trace "Store is: $1";
-  case $store in
-    global ) ;;
-    local ) ;;
-    dist )
-      nux.fatal "Write to dist store is disabled."
-      ;;
-    * )
-      nux.fatal "Unknown config store $1".
-      ;;
-  esac
-  shift;
-  nux.cfg.write.direct "$(nux.cfg.file.$store)" "$@"
-}
+  function :write store {
+    nux.log trace "Store is: $store";
+    case $store in
+      global ) ;;
+      local ) ;;
+      dist )
+        nux.fatal "Write to dist store is disabled."
+        ;;
+      * )
+        nux.fatal "Unknown config store $store".
+        ;;
+    esac
+    shift;
+    :write.direct "$(nux.cfg.file.$store)" "$@"
+  }
 
-## nux.cfg.dir.global::
+## :dir.global::
 ##   Returns path of *global* config directory. May be overriden
 ##   by library for customization of path format.
 ##
-function nux.cfg.dir.global {
-  echo "$HOME/.config/$NUX_APP_NAME"
-}
-## nux.cfg.dir.dist::
+  function :dir.global {
+    echo "$HOME/.config/$NUX_APP_NAME"
+  }
+## :dir.dist::
 ##   Returns path of *dist* config directory. SHOULD be overriden
 ##   by library for customization of path format.
 
-function nux.cfg.dir.dist {
-  echo "$NUX_APP_DIR/config/$NUX_APP_NAME"
-}
-## nux.cfg.dir.local::
+  function :dir.dist {
+    echo "$NUX_APP_DIR/config/$NUX_APP_NAME"
+  }
+## :dir.local::
 ##   Returns path of *local* config directory. SHOULD be overriden
 ##   by library for customization of path format.
 ##
-function nux.cfg.dir.local {
-  nux.cfg.dir.global
-}
+  function :dir.local {
+    :dir.global
+  }
 
-## nux.cfg.file.global::
-## nux.cfg.file.local::
-## nux.cfg.file.dist::
+## :file.global::
+## :file.local::
+## :file.dist::
 ##   Returns path of *global* config file. Default implementation appends
 ##   *config.yaml* to the respective path. May be overriden if main config
 ##   file is determined in different way.
 ##
-function nux.cfg.file.global {
-  echo $(nux.cfg.dir.global)/$nux_cfg_config_file
-}
+  function :file.global {
+    echo $(nux.cfg.dir.global)/$nux_cfg_config_file
+  }
 
-function nux.cfg.file.dist {
-  echo $(nux.cfg.dir.dist)/$nux_cfg_config_file
-}
+  function :file.dist {
+    echo $(nux.cfg.dir.dist)/$nux_cfg_config_file
+  }
 
-function nux.cfg.file.local {
-  echo $(nux.cfg.dir.local)/$nux_cfg_config_file
-}
+  function :file.local {
+    echo $(nux.cfg.dir.local)/$nux_cfg_config_file
+  }
 
-function nux.cfg.read.direct {
-  local file="$1";shift
-  nux.log trace "Direct read from $file";
-  local path="$@";
-  if nux.check.file.exists "$file"; then
-    if [ -n "$path" ]; then
-      value=$(yaml r  "$file" "$path")
-      if [ "$value" != null ]; then
-        echo "$value"
-      fi
-    else
-      cat "$file";
-    fi
-  fi
-}
-
-
-
-function nux.cfg.write.direct {
-  file="$1";
-  if ! nux.check.file.exists "$1" ; then
-    mkdir -p "$(dirname "$file")";
-    touch "$file";
-  fi
-  shift;
-  yaml w "$file" "$@" -i
-}
-
-
-
-function nux.cfg.get.path {
-  nux.log trace "Reading configuration $@"
-  local only_first=""
-  if [ "$1" = "--first" ]; then
-    only_first="$1"; shift;
-  fi
-
-  maybe_store="$1";
-  local read_from="local global dist"
-  case "$maybe_store" in
-    global ) ;&
-    local ) ;&
-    dist )
-      shift;
-      read_from=$maybe_store
-      ;;
-    * ) ;;
-  esac
-  nux.log trace "Reading from $read_from"
-  for store in $read_from ; do
-    path="$(nux.cfg.dir.$store)/$@"
-    nux.log trace "Testing $path"
-    if [ -e "$path" ] ; then
-      echo $path;
-      if [ -n "$only_first" ]; then
-        break;
+  function :read.direct {
+    local file="$1";shift
+    nux.log trace "Direct read from $file";
+    local path="$@";
+    if nux.check.file.exists "$file"; then
+      if [ -n "$path" ]; then
+        value=$(yaml r  "$file" "$path")
+        if [ "$value" != null ]; then
+          echo "$value"
+        fi
+      else
+        cat "$file";
       fi
     fi
-  done
+  }
+
+
+
+  function :write.direct file {
+    if ! nux.check.file.exists "$file" ; then
+      mkdir -p "$(dirname "$file")";
+      touch "$file";
+    fi
+    shift;
+    yaml w "$file" "$@" -i
+  }
+
+
+
+  function :get.path {
+    nux.log trace "Reading configuration $@"
+    local only_first=""
+    if [ "$1" = "--first" ]; then
+      only_first="$1"; shift;
+    fi
+
+    maybe_store="$1";
+    local read_from="local global dist"
+    case "$maybe_store" in
+      global ) ;&
+      local ) ;&
+      dist )
+        shift;
+        read_from=$maybe_store
+        ;;
+      * ) ;;
+    esac
+    nux.log trace "Reading from $read_from"
+    for store in $read_from ; do
+      path="$(nux.cfg.dir.$store)/$@"
+      nux.log trace "Testing $path"
+      if [ -e "$path" ] ; then
+        echo $path;
+        if [ -n "$only_first" ]; then
+          break;
+        fi
+      fi
+    done
+  }
+
 }

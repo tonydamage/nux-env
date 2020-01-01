@@ -1,11 +1,12 @@
 ## #nux.json NUX Script JSON Helper library
 ##
 ## #Public functions
-
+@namespace nux.json. {
 ##   nux.json.start
 ##     Starts operation on new JSON. Resets write operations stack and JSON
 ##     source file to empty (useful for creating JSON from scratch.)
-function nux.json.start {
+
+function :start {
   nux_json_opstack=".";
   nux_json_source="-n";
 }
@@ -19,8 +20,7 @@ function nux.json.start {
 ##
 ##     NOTE: Open does not reset operation stack. To reset operation stack
 ##     and opened file use *nux.json.start*
-function nux.json.open {
-  local file="$1"
+function :open file {
   if [ -f "$file" ]; then
     nux_json_source="$file"
   fi
@@ -30,9 +30,8 @@ function nux.json.open {
 ##     Reads *path* from currently opened JSON file.
 ##     NOTE: Read does not see changes performed by *nux.json.write* unless
 ##     these changes were flushed using *nux.json.flush*.
-function nux.json.read {
-  local path=".$1";
-  jq -r "$path" "$nux_json_source";
+function :read path {
+  jq -r ".$path" "$nux_json_source";
 }
 
 ##   nux.json.write <path> <value>
@@ -40,16 +39,12 @@ function nux.json.read {
 ##     immediately, but rather when *nux.json.flush* is invoked.
 ##     This allows for batching of operations or opting out of actually
 ##     modifying file.
-function nux.json.write {
-  local path=".$1";
-  local value="$2";
-  nux_json_opstack="${nux_json_opstack} | $path |= \"$value\""
+function :write path value {
+  nux_json_opstack="${nux_json_opstack} | .$path |= \"$value\""
 }
 
-function nux.json.write.raw {
-  local path=".$1";
-  local value="$2";
-  nux_json_opstack="${nux_json_opstack} | $path |= $value"
+function :write.raw path value {
+  nux_json_opstack="${nux_json_opstack} | .$path |= $value"
 }
 
 ##   nux.json.flush [<target>]
@@ -59,8 +54,7 @@ function nux.json.write.raw {
 ##     NOTE: Flush does not reset operation stack. To reset
 ##     operation stack and opened file use *nux.json.start*
 ##
-function nux.json.flush {
-  local target="$1"
+function :flush target {
   if [ -n "$target" ]; then
     local write_target="$target";
     if [ "$nux_json_source" == "$target" ]; then
@@ -80,7 +74,7 @@ function nux.json.flush {
 ##        *njw* - nux.json.write
 ##        *njr* - nux.json.read
 ##
-function nux.json.shorthands {
+function :shorthands {
   function njw {
     nux.json.write "$@"
   }
@@ -111,3 +105,5 @@ function nux.json.shorthands {
 ##   *done*;
 ##
 ##
+
+}

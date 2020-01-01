@@ -42,6 +42,5 @@ if [ -t 1 ] {
 
   readonly NC_error=$NC_Red
 
+  nux.log trace Terminal colors enabled
 }
-
-nux.log trace Terminal colors enabled
