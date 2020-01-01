@@ -30,3 +30,8 @@ backend.github.detect() {
     echo $repo:$closest_git
   done
 }
+
+backend.github.labels.id() {
+  githublike.get "labels" \
+   | jq -r ".[] | .name + \":\" + .name"
+}

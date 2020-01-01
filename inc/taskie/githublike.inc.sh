@@ -9,9 +9,12 @@ githublike.common.issue.list() {
 
 githublike.common.issue.exists() {
   local message="$@"
-  nux.json.start
-  nux.json.open "$githublike_issuemap"
-  id=$(nux.json.read "\"$githublike_api\".\"$githublike_repository\".\"$message\"")
+  id="null"
+  if [ -e "$githublike_issuemap" ]; then
+    nux.json.start
+    nux.json.open "$githublike_issuemap"
+    id=$(nux.json.read "\"$githublike_api\".\"$githublike_repository\".\"$message\"")
+  fi
   nux.log debug "Message Id is $id"
   test "$id" != null #-o -n "$id";
 }
@@ -29,8 +32,8 @@ githublike.common.issue.add() {
 
   nux.json.write title "$message"
   nux.json.write message "$message"
-  if [ -n "labelId" ]; then
-  nux.json.write.raw labels[0] $labelId
+  if [ -n "$labelId" ]; then
+    nux.json.write labels[0] $labelId
   fi
   local payload=$(nux.json.flush)
 
@@ -58,16 +61,15 @@ githublike.get() {
   nux.log debug Repository is $githublike_repository, message is $message
   nux.log debug API call: $api Payload: $payload
   header_tmp=$(mktemp);
-  while [ -n "$api" ];
-  do
-  curl $githublike_curl_params -s -D "$header_tmp" -H "Content-Type: application/json" "$api"
-  next=$(grep "Link: " "$header_tmp" | tr "," "\n" | grep rel=\"next\" | cut -d"<" -f2 | cut -d">" -f1)
-  nux.log debug Next "$next";
-  if [ -n "$next" ]; then
-    api="${next}${githublike_next_append}"
-  else
-    api=""
-  fi
+  while [ -n "$api" ]; do
+    curl $githublike_curl_params -s -D "$header_tmp" -H "Content-Type: application/json" "$api"
+    next=$(grep "Link: " "$header_tmp" | tr "," "\n" | grep rel=\"next\" | cut -d"<" -f2 | cut -d">" -f1)
+    nux.log debug Next "$next";
+    if [ -n "$next" ]; then
+      api="${next}${githublike_next_append}"
+    else
+      api=""
+    fi
   done;
   rm -f $header_tmp;
 }
@@ -77,6 +79,7 @@ githublike.post() {
   local api="${githublike_api}/repos/${githublike_repository}/${resource}${githublike_api_append}"
   local payload="$2"
   nux.log debug POST API call: $api Payload: $payload
+  nux.log trace curl $githublike_curl_params -s -H "Content-Type: application/json" -X POST -d "$payload" "$api"
   curl $githublike_curl_params -s -H "Content-Type: application/json" -X POST -d "$payload" "$api"
 }
 

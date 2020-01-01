@@ -2,5 +2,7 @@ backends:
   preference: gogs github
 colors:
   labels:
-    bug: red
+    bug: bg_red
     enhancement: blue
+  state:
+    open: bg_green
