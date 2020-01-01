@@ -1,4 +1,4 @@
-#!/usr/bin/env nux-runner
+#!/usr/bin/env nuxr-nuxsh
 
 # FIXME: Check for configuration
 
@@ -12,19 +12,19 @@ nux.use taskie/backend.github
 nux.use taskie/backend.gogs
 nux.use taskie/backend.dir
 
-with.backend() {
-  backendId="$1";
+function with.backend backendId {
   backend=$(echo $backendId | cut -d: -f1);
   nux.exec.optional backend.$backend.with;
 }
 
-endwith.backend() {
+function endwith.backend {
   unset backendId;
   unset backendEngine;
 }
 
 
-task.labels() {
+
+@command labels {
   with.backend $(backend.detect);
     backend.$backend.labels "$@";
   endwith.backend;
@@ -35,7 +35,7 @@ task.labels() {
 ##   Adds issue to the task repository. If issue of same title is
 ##   already known locally this fails.
 ##
-task.add() {
+@command add {
   with.backend $(backend.detect);
     if ! backend.$backend.issue.exists "$@" ; then
       local labels=$(backend.$backend.labels.id)
@@ -58,14 +58,15 @@ task.add() {
 }
 
 nuxr.repl.expose cd pwd ls clear
-nuxr.repl.prompt() {
+
+function nuxr.repl.prompt {
   echo "${nc_green}$NUX_SCRIPTNAME${nc_end}:${nc_blue}$(pwd)${nc_end}> "
 }
 
 ##
 ##
 ##
-task.list() {
+@command list {
   with.backend $(backend.detect);
     backend.$backend.issue.list "$@";
   endwith.backend;
@@ -73,18 +74,18 @@ task.list() {
 
 taskie_backends=$(nux.cfg.read backends.preference);
 
-git.origins() {
+function git.origins {
   nux.log debug Closest git parent is $closest_git;
   if [ -n "$closest_git" ]; then
     grep -E "url *=" "$closest_git/config" | cut -d= -f2
   fi
 }
 
-task.detect() {
+@command detect {
   backend.detect --all "$@";
 }
 
-backend.detect() {
+function backend.detect {
   all=$1;
   if [ "$all" = "--all" ]; then
     shift;
@@ -101,16 +102,10 @@ backend.detect() {
   done;
 }
 
-
-
-
-
-
-
-gogs.config.site() {
+function gogs.config.site {
   nux.cfg.read "gogs.\"$1\"$2";
 }
 
-backend.file.detect() {
+function backend.file.detect {
   :
 }

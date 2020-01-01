@@ -1,4 +1,3 @@
-
 nux.use nux/color
 nux.use nuxr/repl
 
@@ -86,7 +85,7 @@ nux.use nuxr/repl
     local task_dot=$(tr " " "." <<< "$task")
     nux.log trace "Trying to figure task documentation location for $task $task_dot"
     doc_start=$(grep -hn -E "## +($task)::" "$script" | cut -d: -f1)
-    code_start=$(grep -hn -E "((function +task.$task_dot)|(task.$task_dot *\(\))) +{" "$script" | cut -d: -f1)
+    code_start=$(grep -hn -E "((@command +:?$task_dot .*)|(function +task.$task_dot)|(task.$task_dot *\(\))) +{" "$script" | cut -d: -f1)
     nux.log trace "doc_start" $doc_start $code_start
     if [ -n "$doc_start" -a -n "$code_start" ] {
       sed -n "$doc_start,$code_start"p "$script" \
@@ -96,6 +95,6 @@ nux.use nuxr/repl
         return 0
       else
         return -1
-      }
     }
+  }
 }

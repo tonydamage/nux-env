@@ -1,9 +1,11 @@
 #!/usr/bin/env nuxr-nuxsh
+
 nux.use nuxfs
 
 MARK_DIR_NAME=.by
 MARK_PREFIX=""
 
+# FIXME: This should be probably in nux/fs
 @namespace nuxfs. {
   function :path.relative base target {
     realpath -Lms --relative-to="$base" "$target"
@@ -33,7 +35,6 @@ MARK_PREFIX=""
   }
 }
 
-
 @namespace mark. {
   function :dir item {
     if  [ -n "$MARK_DIR" ]; then
@@ -54,6 +55,7 @@ MARK_PREFIX=""
     fi
     nuxfs.symlink "$item" "$root/$mark" "$name"
   }
+
 }
 
 ## Manages symlinks in closest mark (**.by**) directory, provides functionality to batch create
@@ -61,10 +63,9 @@ MARK_PREFIX=""
 ##
 ## #Available tasks:
 @namespace task. {
-
 ##   tag:: <task> <task arguments...>
 ##     Performs specified task in tag namespace (marks prefixed with **tag/**)
-  function :tag task {
+@command tag task {
     MARK_PREFIX="tag/"
     nuxr.run "$task" "$@"
   }
@@ -72,7 +73,7 @@ MARK_PREFIX=""
 ##   this:: <mark> [marks...]
 ##     Marks **current folder** with specific markers.
 ##     This creates symlinks in **mark** folder pointing to **current folder**.
-  function :this mark {
+@command this mark {
     nux.log debug "Args $#"
     item=$(pwd)
     mark_root=$(mark.dir "$item")
@@ -86,7 +87,7 @@ MARK_PREFIX=""
 ##   multiple:: <mark> <files...>
 ##     Marks **files** with specific **mark**.
 ##     This creates symlinks for files in **mark** folder.
-  function :multiple mark {
+@command multiple mark {
     pwd=$(pwd)
     mark_root=$(mark.dir "$pwd")
     while [ "$#" -gt 0 ]; do
@@ -98,7 +99,7 @@ MARK_PREFIX=""
 ##   display:: [mark]
 ##     Displays path to current mark folder and displays available marks.
 ##     If **mark** is provided list nested marks.
-  function :display mark {
+@command display mark {
     mark_root=$(mark.dir $pwd)
     prefix="$MARK_PREFIX"
     if [ -n "$mark" ]; then
@@ -112,4 +113,3 @@ MARK_PREFIX=""
       done;
     )
   }
-}

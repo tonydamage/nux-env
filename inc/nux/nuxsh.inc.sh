@@ -30,12 +30,18 @@ nux.nuxsh.language.def() {
   .match.line block_end '(\})' \
       syntax
 
-
   .match.line if_start "(if)( +)$prefixed_id( +)$args?( *)(\{)" \
           keyword indent2 prefix identifier indent3 args - - - - - indent4 syntax3
 
+
+  .match.line task_start "((@command)( +))($identifier)((\()|( *))(($identifier,? *)*)(\))?( *)(\{)" \
+      - keyword indent2 identifier - syntax indent3 args - syntax2 indent4 syntax3
+
+
   .match.line function_start "((function)( +))($identifier)((\()|( *))(($identifier,? *)*)(\))?( *)(\{)" \
       - keyword indent2 identifier - syntax indent3 args - syntax2 indent4 syntax3
+
+
 
   .match.line block_start "($identifier)(( +)$args)?( *)(\{)" \
       identifier - indent2 args - - - - - indent3 syntax3
@@ -51,12 +57,12 @@ nux.nuxsh.language.def() {
 
   .highlight prefix cyan
   .highlight identifier green
-  .highlight keyword blue
+  .highlight keyword cyan
   .highlight args yellow
 
   .highlight comment magenta
 
-  .highlight unmatched red
+  .highlight unmatched white
 
   .highlight syntax white
   .highlight syntax2 white
@@ -163,6 +169,20 @@ nux.nuxsh.language.def() {
     case $identifier in
       .*) ;;
       :*) identifier="$_namespace${identifier#:}"
+    esac;
+    echo "${indent}$identifier() {";
+    echo "${indent}  nux.log trace $identifier: invoked";
+     for arg in ${args//,/ }; do
+       echo "${indent}  local $arg="'"$1"'";shift;"
+       echo "${indent}  nux.log trace  '  ' arg $arg: "'$'$arg";"
+     done
+  }
+
+  .match.task_start.plan() {
+    .block.push task
+    case $identifier in
+      :*) identifier="task.${identifier#:}";;
+      *) identifier="task.$identifier"
     esac;
     echo "${indent}$identifier() {";
     echo "${indent}  nux.log trace $identifier: invoked";

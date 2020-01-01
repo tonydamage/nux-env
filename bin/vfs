@@ -30,35 +30,42 @@ function vfs.path.real file {
 }
 
 
-@namespace task. {
-
-
 ##   list::
 ##     Lists all **mergerfs** based virtual filesystems managed by **vfs** tool
-  function :list {
-    echo "1"
-  }
+@command list {
+  echo "1"
+}
 
 ##   info::
 ##     Displays info about current path
-  function :info {
-    nux.log debug "VFS mount: ${CURRENT_MOUNT}";
-    echo "path:" $CURRENT_MOUNT;
-    echo "sources:"
-    for key in "${!CURRENT_SOURCES[@]}"; do
-      echo "  $key: ${CURRENT_SOURCES[$key]}";
-    done
+@command info {
+  nux.log debug "VFS mount: ${CURRENT_MOUNT}";
+  echo "path:" $CURRENT_MOUNT;
+  echo "sources:"
+  for key in "${!CURRENT_SOURCES[@]}"; do
+    echo "  $key: ${CURRENT_SOURCES[$key]}";
+  done
+}
 
   }
 ##   switch:: <storage> <path+>
 ##     Moves specified **paths** to named **storage** for particular **vfs**.
 ##     This is ideal for marking files as keep or migrating them to remote,
 ##     rather then local.
-  function :switch storage {
+
+###
+###     The switch uses **.vfs.sources** file to determine location of target
+###     directory and creates necessary directory structures in target directory
+###     to preserve local rooted path.
+###
+###     FIXME: Switch does not support merging of directories
+
+
+  @command switch storage {
     target="$(vfs.path "$storage")"
     nux.log debug "Target path $target"
     for arg_path in "$@" ; do
-      rooted_path="/$(realpath -Lms --relative-to="$CURRENT_MOUNT" ${arg_path%/})";
+      rooted_path="/$(realpath -m --relative-to="$CURRENT_MOUNT" ${arg_path%/})";
       target_dir="${target}${rooted_path%/*}"
       real_file="$(vfs.path.real "$rooted_path")"
       nux.log trace "Rooted path:   $rooted_path";
@@ -73,35 +80,37 @@ function vfs.path.real file {
       fi
     done
   }
+
 ##   mount:: <target> <name:path> [<name:path>+]
-##     Creates **mergerfs** mount for specified pairs of storage **name** and
-##     **path**
-  function :mount target {
-    local mount_paths="";
-    nux.log debug "MergerFS mount: $target"
+##     Mounts **mergerfs** on **target**. The mount is merge of specified pairs
+##     of storage **name** and **path**.
+##
 
-    source_tempfs="$(mktemp -d)"
-    for source in "$@" ; do
-      source_name="${source%%:*}"
-      source_path="$(realpath "${source#*:}")"
-      source_path="${source_path%/}"
-      nux.log debug "  Source: $source_name Path: $source_path";
-      mount_paths="$mount_paths:${source_path}"
-      echo "$source_name $source_path" >> "$source_tempfs/.vfs.sources"
-    done
-    echo "temp $source_tempfs" >> "$source_tempfs/$VFS_SOURCES_FILE="
+@command mount target {
+  local mount_paths="";
+  nux.log debug "MergerFS mount: $target"
 
-    mergerfs_options="$source_tempfs:${mount_paths}"
-    nux.log debug "MergerFS command:" $mergerfs_options;
-    mergerfs "$mergerfs_options" "$target"
-    (cd $target; vfs info )
+  source_tempfs="$(mktemp -d)"
+  for source in "$@" ; do
+    source_name="${source%%:*}"
+    source_path="$(realpath "${source#*:}")"
+    source_path="${source_path%/}"
+    nux.log debug "  Source: $source_name Path: $source_path";
+    mount_paths="$mount_paths:${source_path}"
+    echo "$source_name $source_path" >> "$source_tempfs/.vfs.sources"
+  done
+  echo "temp $source_tempfs" >> "$source_tempfs/$VFS_SOURCES_FILE="
+
+  mergerfs_options="$source_tempfs:${mount_paths}"
+  nux.log debug "MergerFS command:" $mergerfs_options;
+  mergerfs "$mergerfs_options" "$target"
+  (cd $target; vfs info )
   }
 ##   unmount:: <target>
 ##     Unmounts target VFS filesystem.
-  function :unmount target {
-    fusermount -u "$target"
-    nuxfs.info "${CURRENT_SOURCES[temp]}" removing temporary metadata.
-    rm -rf "${CURRENT_SOURCES[temp]}"
+@command :unmount target {
+  fusermount -u "$target"
+  nuxfs.info "${CURRENT_SOURCES[temp]}" removing temporary metadata.
+  rm -rf "${CURRENT_SOURCES[temp]}"
 
-  }
 }

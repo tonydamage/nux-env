@@ -3,13 +3,12 @@
 
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
-type gm /dev/null 2>&1 && NUX_MAGICK=gm
+type gm > /dev/null 2>&1 && NUX_MAGICK=gm
 
 QUALITY=${QUALITY:=90}
 
-@namespace task. {
 
-  function :video.change.container {
+@command video.change.container {
     CONTAINER=$1;
     shift;
           echo "Using $FFMPEG_OR_LIBAV for conversion."
@@ -20,11 +19,11 @@ QUALITY=${QUALITY:=90}
     done
 }
 
-  function :nikon-mp4 {
+@command function :nikon-mp4 {
     task.video.change.container mp4 "$@"
   }
 
-  function :downscale TARGET SIZE {
+@command downscale TARGET SIZE {
     local i=0;
     local count="$#";
     mkdir -p $TARGET;
@@ -47,11 +46,10 @@ QUALITY=${QUALITY:=90}
   }
 
 
-  ## to:: <jpg|png> <image...>
-  ##
-  ## Convert image to
-  ##
-  function :to target {
+##   to:: <jpg|png> <image...>
+##     Convert image to specified format
+##
+@command to target {
     if ! nux.check.function "media.to.$target" ; then
       echo Target type "$target" is not supported.
       return -1
@@ -65,7 +63,7 @@ QUALITY=${QUALITY:=90}
     done
   }
 
-}
+
 
 function media.to.jpg {
   $NUX_MAGICK convert "$1" -quality $QUALITY -auto-orient "$2"
