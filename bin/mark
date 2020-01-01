@@ -1,5 +1,4 @@
 #!/usr/bin/env nuxr-nuxsh
-
 nux.use nuxfs
 
 MARK_DIR_NAME=.by
@@ -34,10 +33,7 @@ MARK_PREFIX=""
   }
 }
 
-## Manages symlinks in closest mark (**.by**) directory, provides functionality to batch create
-## them with relative paths.
-##
-## #Available tasks:
+
 @namespace mark. {
   function :dir item {
     if  [ -n "$MARK_DIR" ]; then
@@ -48,13 +44,22 @@ MARK_PREFIX=""
   }
 
   function :mark root item mark {
-    nuxfs.info "$item" Creating symlink in $(nuxfs.path.display "$root/$mark")
-    nuxfs.symlink "$item" "$root/$mark"
+    name=""
+    if [ -e "$root/.path-names" ]; then
+      rel_path=$(nuxfs.path.relative "$root/.." "$item");
+      name=${rel_path//\//-}
+      nuxfs.info "$item" Creating symlink: $(nuxfs.path.display "$root/$mark/$name")
+    else
+      nuxfs.info "$item" Creating symlink in $(nuxfs.path.display "$root/$mark")
+    fi
+    nuxfs.symlink "$item" "$root/$mark" "$name"
   }
-
-
 }
 
+## Manages symlinks in closest mark (**.by**) directory, provides functionality to batch create
+## them with relative paths.
+##
+## #Available tasks:
 @namespace task. {
 
 ##   tag:: <task> <task arguments...>
