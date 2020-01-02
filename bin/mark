@@ -1,59 +1,30 @@
 #!/usr/bin/env nuxr-nuxsh
 
-nux.use nuxfs
+nux.use nux/fs
+@prefix fs nux.fs.
 
 MARK_DIR_NAME=.by
 MARK_PREFIX=""
-
-# FIXME: This should be probably in nux/fs
-@namespace nuxfs. {
-  function :path.relative base target {
-    realpath -Lms --relative-to="$base" "$target"
-  }
-
-  function :path.display target {
-    echo $NC_LightPurple$(nuxfs.relative-to-pwd "$target")$NC_No
-  }
-
-  function :symlink target dir name {
-    relative=$(nuxfs.path.relative "$dir" "$target")
-    nux.log debug "Relative path is: $relative"
-    :stage mkdir -p "$dir"
-    if [ -n "$name" ]; then
-      :stage ln -sf "$relative" "$dir/$name"
-    else
-      :stage ln -sf "$relative" "$dir"
-    fi
-  }
-
-  function :stage {
-    if [ -n "$NUXFS_STAGE" ]; then
-      echo "[stage]" "$@"
-    else
-      "$@"
-    fi
-  }
-}
 
 @namespace mark. {
   function :dir item {
     if  [ -n "$MARK_DIR" ]; then
       echo $MARK_DIR;
     else
-      nuxfs.closest "$MARK_DIR_NAME" "$item"
+      fs:closest "$MARK_DIR_NAME" "$item"
     fi
   }
 
   function :mark root item mark {
     name=""
     if [ -e "$root/.path-names" ]; then
-      rel_path=$(nuxfs.path.relative "$root/.." "$item");
+      rel_path=$(nux.fs.path.relative "$root/.." "$item");
       name=${rel_path//\//-}
-      nuxfs.info "$item" Creating symlink: $(nuxfs.path.display "$root/$mark/$name")
+      fs:info "$item" Creating symlink: $(nux.fs.path.display "$root/$mark/$name")
     else
-      nuxfs.info "$item" Creating symlink in $(nuxfs.path.display "$root/$mark")
+      fs:info "$item" Creating symlink in $(nux.fs.path.display "$root/$mark")
     fi
-    nuxfs.symlink "$item" "$root/$mark" "$name"
+    fs:symlink "$item" "$root/$mark" "$name"
   }
 
 }

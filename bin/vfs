@@ -1,11 +1,13 @@
 #!/usr/bin/env nuxr-nuxsh
 
-nux.use nuxfs
+nux.use nux/fs
+@prefix fs nux.fs.
 
 VFS_SOURCES_FILE=".vfs.sources"
 
-CURRENT_SOURCES_FILE=$(nuxfs.closest "$VFS_SOURCES_FILE");
-if [ -f "$CURRENT_SOURCES_FILE" ] {
+CURRENT_SOURCES_FILE=$(nux.fs.closest "$VFS_SOURCES_FILE");
+
+if fs:exists "$CURRENT_SOURCES_FILE" {
   CURRENT_MOUNT="${CURRENT_SOURCES_FILE%/*}";
   declare -gA CURRENT_SOURCES
   nux.log debug "Current VFS mount: ${CURRENT_MOUNT%/*}";
@@ -22,10 +24,10 @@ function vfs.path name {
 function vfs.path.real file {
   for root in "${CURRENT_SOURCES[@]}" ; do
     nux.log trace "Testing $root$file"
-    if [ -e "${root}${file}" -o -h "${root}${file}" ]; then
+    if fs:exists "${root}${file}" {
       echo ${root}${file};
       return 0;
-    fi
+    }
   done
 }
 
@@ -47,7 +49,6 @@ function vfs.path.real file {
   done
 }
 
-  }
 ##   switch:: <storage> <path+>
 ##     Moves specified **paths** to named **storage** for particular **vfs**.
 ##     This is ideal for marking files as keep or migrating them to remote,
@@ -63,6 +64,9 @@ function vfs.path.real file {
 
   @command switch storage {
     target="$(vfs.path "$storage")"
+    if [ -z "$target" ] {
+      nux.fatal "$storage does not exists."
+    }
     nux.log debug "Target path $target"
     for arg_path in "$@" ; do
       rooted_path="/$(realpath -m --relative-to="$CURRENT_MOUNT" ${arg_path%/})";
@@ -73,10 +77,10 @@ function vfs.path.real file {
       nux.log trace "Target dir:    $target_dir";
       if [ -n "$real_file" ]; then
         mkdir -p "$target_dir";
-        nuxfs.info $arg_path moving from "$NC_LightPurple${real_file}$NC_No" to "$NC_LightPurple$target_dir"
+        fs:info "$arg_path" moving from "$NC_LightPurple${real_file}$NC_No" to "$NC_LightPurple$target_dir"
         mv "$real_file" "$target_dir";
       else
-        nuxfs.error $arg_path does not exists.
+        fs:error $arg_path does not exists.
       fi
     done
   }
@@ -101,16 +105,16 @@ function vfs.path.real file {
   done
   echo "temp $source_tempfs" >> "$source_tempfs/$VFS_SOURCES_FILE="
 
-  mergerfs_options="$source_tempfs:${mount_paths}"
-  nux.log debug "MergerFS command:" $mergerfs_options;
-  mergerfs "$mergerfs_options" "$target"
+  mergerfs_mounts="$source_tempfs:${mount_paths}"
+  nux.log debug "MergerFS command:" $mergerfs_mounts;
+  mergerfs "$mergerfs_mounts" "$target"
   (cd $target; vfs info )
   }
 ##   unmount:: <target>
 ##     Unmounts target VFS filesystem.
 @command :unmount target {
   fusermount -u "$target"
-  nuxfs.info "${CURRENT_SOURCES[temp]}" removing temporary metadata.
+  fs:info "${CURRENT_SOURCES[temp]}" removing temporary metadata.
   rm -rf "${CURRENT_SOURCES[temp]}"
 
 }
