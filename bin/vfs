@@ -76,9 +76,9 @@ function vfs.path.real file {
       nux.log trace "Real file:     $real_file";
       nux.log trace "Target dir:    $target_dir";
       if [ -n "$real_file" ]; then
-        mkdir -p "$target_dir";
+        fs:stage mkdir -p "$target_dir";
         fs:info "$arg_path" moving from "$NC_LightPurple${real_file}$NC_No" to "$NC_LightPurple$target_dir"
-        mv "$real_file" "$target_dir";
+        fs:stage mv "$real_file" "$target_dir";
       else
         fs:error $arg_path does not exists.
       fi
@@ -115,6 +115,6 @@ function vfs.path.real file {
 @command :unmount target {
   fusermount -u "$target"
   fs:info "${CURRENT_SOURCES[temp]}" removing temporary metadata.
-  rm -rf "${CURRENT_SOURCES[temp]}"
+  fs:stage rm -rf "${CURRENT_SOURCES[temp]}"
 
 }
