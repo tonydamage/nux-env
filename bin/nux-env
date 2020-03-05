@@ -1,10 +1,11 @@
 #!/usr/bin/env nuxr-nuxsh
 ## Portable *nix environment by tonydamage
-
-## status::
-##   Show status of nux-env installation
+##
 
 @namespace task. {
+
+##   status::
+##     Show status of nux-env installation
   function :status {
       echo nux-env folder: $NUX_ENV_DIR
       pushd $NUX_ENV_DIR > /dev/null
@@ -12,8 +13,8 @@
       popd > /dev/null
   }
 
-## update::
-##   pulls latest nux-env from repository.
+##    update::
+##      pulls latest nux-env from repository.
   function :update {
     pushd $NUX_ENV_DIR > /dev/null
     git stash
@@ -22,8 +23,8 @@
     popd > /dev/null
 }
 
-##  install::
-##    Install nux-env recommended binaries if not present
+##    install::
+##      Install nux-env recommended binaries if not present
   function :install {
     :
 

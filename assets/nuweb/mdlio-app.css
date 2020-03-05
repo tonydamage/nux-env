@@ -1,0 +1,182 @@
+@font-face {
+  font-family: "Material Design Icons";
+  src: url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.eot?v=1.9.32");
+  src: url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.eot?#iefix&v=1.9.32") format("embedded-opentype"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.woff2?v=1.9.32") format("woff2"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.woff?v=1.9.32") format("woff"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.ttf?v=1.9.32") format("truetype"), url("https://cdn.materialdesignicons.com/1.9.32/fonts/materialdesignicons-webfont.svg?v=1.9.32#materialdesigniconsregular") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.gallery .item .mdl-card_title {
+  padding: 8px;
+}
+.gallery .item .mdl-card__title-text {
+  text-decoration:none;
+  font-family: "Roboto","Helvetica","Arial",sans-serif
+}
+
+html {
+  overflow-y: scroll;
+}
+
+.gallery .item.type-image.thumb .mdl-card_title {
+  display:none;
+}
+
+.relative {
+  position:relative;
+}
+
+.item.type-person.thumb .mdl-card_title,
+.item.type-image.thumb .mdl-card_title {
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+  width: calc(100% - 16px);
+  text-shadow: 0px 0px 7px rgba(0, 0, 0, 1);
+  bottom: 0px;
+  position: absolute;
+}
+
+.gallery .item.type-image:hover .mdl-card_title {
+  display: block;
+}
+
+
+
+.file .mdl-card_title-text {
+  word-break:break-all;
+}
+
+
+.file  .mdl-card__title-text:before {
+  font-family: "Material Design Icons";
+  margin-right:8px;
+  content: "\f214";
+}
+
+.file.type-directory .mdl-card__title-text:before {
+  content: "\f24b";
+}
+
+.file.type-person .mdl-card__title-text:before {
+  content: "\f004";
+}
+
+.file.type-image .mdl-card__title-text:before {
+  
+  content: "\f21f";
+}
+
+.file.type-tasklist .title:before {
+  content:"\f755";
+}
+
+.file.type-video .mdl-card__title-text:before {
+  content: "\f22b";
+}
+
+.file[data-mime="application/pdf"] .mdl-card__title-text:before {
+  content: "\f225"
+}
+
+
+.gallery {
+  width: calc(100% - 16px);
+  padding: 0px;
+}
+
+.breadcrumb {
+  margin-top: 24px;
+  display:block;
+}
+.breadcrumb + h1 {
+  margin-top:0px;
+}
+
+
+.gallery .item.mdl-card {
+  min-height: auto;
+}
+
+.gallery .item .mdl-card_media img {
+  width:100%;
+  height:auto;
+}
+
+.gallery .item.no-thumb .mdl-card_media a {
+  display: block;
+  /*min-height: 100px;*/
+  width:100%;
+  background: rgba(255,255,255,0.25);
+  text-decoration:none;
+  color:#fff;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/*
+.gallery .item.no-thumb.type-directory .mdl-card_media a::before {
+  content: "folder";
+  font-family: "Material Icons";
+  margin-right:8px;
+  font-size:128px;
+  line-height:128px;
+  text-decoration:none;
+
+}
+*/
+
+.main-width {
+    max-width: 960px;
+    margin: auto;
+    position: relative;
+}
+
+@media (max-width: 976px) {
+  .main-width {
+    margin:0 8px;
+  }
+}
+
+
+#scooter {
+  position: absolute;
+  overflow: hidden;
+  top:0px;
+  width:100%;
+  bottom:0px;
+  height:0px;
+} 
+
+#sizer {
+  background:rgba(0,0,0,0.10);
+  position:relative;
+  height:100%;
+}
+
+#sizer .gutter {
+  background:rgba(0,0,0,0.1);
+  height:100%;
+}
+
+/* Layout Hack */
+
+.mdl-layout {
+    overflow: visible;
+}
+.mdl-layout__drawer {
+    position: fixed;
+}
+.mdl-layout__content {
+    display: block;
+    overflow: visible;
+    margin-top: 64px;
+}
+.is-small-screen .mdl-layout__content {
+    margin-top: 56px;
+}
+.mdl-layout__header {
+    position: fixed;
+}
+.mdl-layout__obfuscator {
+    position: fixed;
+}
