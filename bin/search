@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+filter="$1"; shift;
+
+grep=""
+for q in "$@" ; do 
+	list=-l
+	if [ "TEST${q:0:1}" = "TEST-" ]; then
+		list=-L
+		q=${q:1}
+	fi  
+	grep="$grep | xargs -0 -n10 grep --null $list -E \"$q\""	
+	
+done;
+
+eval "find -iname \"$filter\" -print0 $grep | tr '\0' '\n'"
