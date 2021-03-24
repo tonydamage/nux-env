@@ -5,7 +5,7 @@ nux.use nux.json
 githublike gogs
 
 backend.gogs.detect() {
-  closest_git=$(nuxfs.closest .git "$1")
+  closest_git=$(nux.fs.closest .git "$1")
   git.origins "$closest_git" | while read origin
   do
     nux.log debug Testing backend for: $origin

@@ -41,7 +41,7 @@ nux.use nuxr/repl
 ###   Runs an interactive taskie shell with base taskie commands available.
 ###
   function :interactive() {
-    nux.use nux.repl
+    nux.use nux/repl
     nux.repl.start nuxr.repl.process nuxr.repl.prompt nuxr.repl.completer
   }
 

@@ -22,7 +22,7 @@ backend.github.with() {
 }
 
 backend.github.detect() {
-  closest_git=$(nuxfs.closest .git "$1")
+  closest_git=$(nux.fs.closest .git "$1")
 
   git.origins "$closest_git" | grep github.com | while read origin
   do

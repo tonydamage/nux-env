@@ -1,11 +1,11 @@
 #!/usr/bin/env nux-runner
 
-nux.use nudsl
+#nux.use nudsl
 
 ## highlight:: <language> <file>
 
 task.highlight() {
-  nux.use nux/nuxsh
+
   nux.dsl.process highlight nux.nuxsh.language.def "$2"
 }
 
@@ -23,7 +23,6 @@ task.plan.compile() {
 }
 
 task.plan.preview() {
-  nux.use nux/nuxsh
   nux.dsl.plan nux.nuxsh.language "$2"
   plan="$(nudsl.plan.file "$1" "$2")"
   if [ -e "$plan" ]; then

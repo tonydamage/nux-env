@@ -4,8 +4,8 @@
 
 #source ~/.config/nux-env/taskie
 
-nux.use nuxfs
-nux.use nux.repl
+nux.use nux/fs
+nux.use nux/repl
 
 nux.use taskie/common
 nux.use taskie/backend.github

@@ -1,16 +1,11 @@
 
+@namespace nux.repl. {
 
 ## nux.repl.start <processor> [<prompt>] [<complete>]
 ##   Starts NUX REPL
 ##
 ##   FIXME: Add autocompletion
-function nux.repl.start {
-  function .null() {
-    :
-  }
-  local processor=$1;
-  local prompt=${2:-.null};
-  local complete=$3;
+function :start processor prompt complete {
   local command=""
 
   if nux.check.function $complete; then
@@ -40,10 +35,7 @@ function nux.repl.start {
 ## This function is modified version of
 ## https://github.com/mchav/with/blob/master/with
 
-function nux.repl.completion() {
-  local prompt=$1;
-  local compgen_command=$2;
-  shift;shift;
+function :completion prompt compgen_command {
   # print readline's prompt for visual separation
   if [ "$#" -eq 0 ]; then
       echo "$($prompt)$READLINE_LINE"
@@ -117,4 +109,6 @@ function nux.repl.completion() {
   if [[ "$display_all" = "y" ]]; then
     for completion in "${COMPREPLY[@]}"; do echo "$completion"; done | column
   fi
+}
+
 }
