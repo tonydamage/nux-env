@@ -78,7 +78,6 @@ function :read {
         nux.fatal "Unknown config store $store".
         ;;
     esac
-    shift;
     :write.direct "$(nux.cfg.file.$store)" "$@"
   }
 
@@ -146,7 +145,7 @@ function :read {
       mkdir -p "$(dirname "$file")";
       touch "$file";
     fi
-    shift;
+    nux.log debug "Args $@"
     yaml w "$file" "$@" -i
   }
 

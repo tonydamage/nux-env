@@ -43,6 +43,14 @@ function nux.require {
 
 }
 
+function nux.round {
+  echo $(printf %.$2f $(echo "scale=$2;(((10^$2)*$1)+0.5)/(10^$2)" | bc))
+};
+
+function nux.calc {
+	echo "$@" | bc
+}
+
 ## nux.use:: <library>
 function nux.use {
 	nux.log trace "nux.use: Including: $1"
@@ -91,7 +99,7 @@ function nux.dirty.urlencode {
 function nux.url.parse {
   format=${2:-"protocol:\2\nuser:\4\nhost:\5\nport:\7 \npath:\8"}
   echo "$1" | sed \
-    -re "s/(([^:\/]*):\/\/)?(([^@\/:]*)@)?([^:\/]+)(:([0-9]+))?(\/(.*))?/$format/g"
+    -re "s/(([^:\/]*):\/\/)?(([^@\/:]*)@)?([^:\/]+)(:([0-9]+))?([:\/](.*))?\$/$format/g"
 
 }
 

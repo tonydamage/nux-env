@@ -30,3 +30,7 @@ function nux.check.exec {
 function nux.check.file.exists {
 	test -e "$1" -o -h "$1";
 }
+
+function nux.check.file.symlink {
+	test -h "$1";
+}
