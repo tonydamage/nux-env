@@ -1,13 +1,20 @@
 #!/usr/bin/env nuxr-nuxsh
 
+nux.use nux/fs
 
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
 type gm > /dev/null 2>&1 && NUX_MAGICK=gm
 
-QUALITY=${QUALITY:=90}
+QUALITY=${QUALITY:=95}
+DUPLICATE_THRESHOLD=${DUPLICATE_THRESHOLD:=90%}
+SKIP_CHECK=no_skip
+nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
 
-
+## Performs operations on media such as images or videos.
+## Use env **QUALITY** to specify compression quality.
+##
+## # Available tasks:
 @command video.change.container {
     CONTAINER=$1;
     shift;
@@ -23,32 +30,63 @@ QUALITY=${QUALITY:=90}
     task.video.change.container mp4 "$@"
   }
 
+
+@command keep-path task {
+
+}
+
+##   remove-orig:: <task> <task arguments...>
+##     Runs specified task, but remove original images if applicable.
+##     This keyword is applicable for *downscale*, *to*
+@command remove-orig task {
+  nuxr.run "$task" "$@"
+}
+
+##   no-overwrite:: <task> <task arguments...>
+##     Runs specified task, but remove original images if applicable.
+##     This keyword is applicable for *downscale*, *to*
+@command no-overwrite task {
+  SKIP_CHECK=nux.fs.exists
+  nuxr.run "$task" "$@"
+}
+
+@command preserve task {
+  PRESERVE=true
+  nuxr.run "$task" "$@"
+}
+
+##   downscale:: <target> <size> <image...>
+##     Creates downscaled copy of image in *target* directory.
+##     Image is downsampled to fit in *size*. Smaller images are not upscaled.
 @command downscale TARGET SIZE {
     local i=0;
     local count="$#";
     mkdir -p $TARGET;
     for image in "$@"; do
       let "i=i+1"
-      name=$(basename $image);
-      target_file=$TARGET/$name;
+      name="$(basename "$image")";
+      target_file="$TARGET/$name";
       if [ -n "$PRESERVE" ]; then
         target_dir="${TARGET}/$(dirname "$image")";
         mkdir -p "$target_dir";
         target_file="${target_dir}/$name";
       fi
-      echo "Image: $i/$count Downsampling  $image -> $target_file"
-      $NUX_MAGICK convert $image \
-        -filter Lanczos -sampling-factor 1x1 \
-        -resize "${SIZE}x${SIZE}>" \
-        -quality $QUALITY \
-        $target_file
+      if $SKIP_CHECK "$target_file" ; then
+        echo "Image: $i/$count Skipping"
+      else
+        echo "Image: $i/$count Downsampling  $image -> '$target_file'"
+        $NUX_MAGICK convert "$image" \
+          -filter Lanczos -sampling-factor 1x1 \
+          -resize "${SIZE}x${SIZE}>" \
+          -quality $QUALITY \
+          "$target_file"
+      fi
     done
   }
 
 
-##   to:: <jpg|png> <image...>
-##     Convert image to specified format
-##
+##   to:: <**jpg|png**> <image...>
+##     Convert image to specified format.
 @command to target {
     if ! nux.check.function "media.to.$target" ; then
       echo Target type "$target" is not supported.
@@ -63,8 +101,129 @@ QUALITY=${QUALITY:=90}
     done
   }
 
+##   list-smaller:: <size> <image...>
+##     Lists images smaller than **size**.
+@command list-smaller size {
+  $NUX_MAGICK identify -format "%f;%w;%h\n" "$@" | while IFS=";" read file w h ; do
+    if [ -z "$file" ]; then
+      continue;
+    fi
+    if [ $w -gt $size ] && [ $h -gt $size ]; then
+      continue;
+    fi
+    echo "$file $w $h"
+  done
+}
 
+@command list-different size {
+  $NUX_MAGICK identify -format "%f;%w;%h\n" "$@" | while IFS=";" read file w h ; do
+    if [ -z "$file" ]; then
+      continue;
+    fi
+    if [ $w -eq $size ] && [ $h -eq $size ]; then
+      continue;
+    fi
+    echo "$file $w $h"
+  done
+}
+
+##   duplicates:: <image...>
+##     Analyse images for duplicates and display duplicate groups using feh.
+##     When image is displayed following actions are available:
+##       0:: Keep file
+##       1:: Move to folder with name of first image
+##       2:: Replace with symlink to first image
+##       3:: Remove file
+###
+###    Environment variables:
+###      DUPLICATE_THRESHOLD:: Sets similarity treshold when images are 
+###         considered similar. Default value is *90%*
+###         
+@command duplicates {
+  nux.require findimagedupes
+  nux.require feh
+  findimagedupes  -t $DUPLICATE_THRESHOLD "$@" | while read duplicate_set; do
+    largest=$(img.largest $duplicate_set)
+    set_name=${largest%.*}
+    nux.fs.info $largest Set name: $set_name
+    feh_files="";
+    for file in $duplicate_set; do
+      file=$(nux.fs.path.relative.pwd "$file");
+      #nux.fs.info $largest Possible duplicate $file
+      feh_files="$feh_files $file";
+    done
+    feh \
+      --zoom max \
+      --scale-down \
+      -G \
+      --action '[keep]echo %F: Keeping file.' \
+      --action1 "[move]echo %F: Moving to $set_name ; mkdir -p $set_name ; mv -t $set_name %F ;" \
+      --action2 "[symlink]echo %F: Replacing with symlink to $largest ; ln -sf $largest %F ;" \
+      --action3 "[delete] echo %F Removing file; rm -f %F;" \
+      --info 'echo %n: %wx%h' \
+      --draw-tinted $feh_files
+  done
+}
+
+##   feh:: <image...>
+##     Displays images using feh.
+##     When image is displayed following actions are available:
+##       0:: Next file
+##       1:: -
+##       2:: -
+##       3:: Remove file
+@command feh {
+  feh \
+      --zoom max \
+      --scale-down \
+      -G \
+      --action '[keep]echo %F: Keeping file.' \
+      --action3 "[delete] echo %F Removing file; rm -f %F;" \
+      --info 'echo %n: %wx%h' \
+      --draw-tinted "$@"
+}
+
+function img.largest {
+  ## FIXME: Identify largest image
+  nux.fs.path.relative.pwd "$1";
+}
 
 function media.to.jpg {
   $NUX_MAGICK convert "$1" -quality $QUALITY -auto-orient "$2"
+}
+
+function media.to.png {
+  $NUX_MAGICK convert "$1" -quality $QUALITY -auto-orient "$2"
+}
+
+function no_skip {
+  return 1;
+}
+
+
+@command mass-crop label target {
+  for img in "$@"; do
+    without_suffix=${img%.*};
+    suffix=${img##*.};
+    id=${without_suffix##*/}
+    nux.log debug "Image: $img ID: $id"
+    img_size=$($NUX_MAGICK identify "$img" -format "%h %w" )
+    img_h=${img_size%% *};
+    img_w=${img_size##* };
+    i=1;
+    if [ -e "$ANNOTATIONS/${id}.bboxes" ]; then
+      grep "^$label" "$ANNOTATIONS/${id}.bboxes" | while read label cx cy w h; do
+        w=$(nux.round $(nux.calc "$w*$img_w") 0);
+        h=$(nux.round $(nux.calc "$h*$img_h") 0);
+        x=$(nux.round $(nux.calc "$cx*$img_w-$w*0.5") 0);
+        y=$(nux.round $(nux.calc "$cy*$img_h-$h*0.5") 0);
+        nux.fs.info "$img" "cropping  ${w}x${h}+${x}+${y} to " "$target/$id.$i.$suffix"
+        $NUX_MAGICK convert "$img" -crop "${w}x${h}+${x}+${y}" "$target/$id.$i.$suffix"
+        let "i=i+1"
+      done;
+    fi
+  done;
+
+
+
 }
