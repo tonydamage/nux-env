@@ -7,8 +7,30 @@ nux.use nux/check
       check:file.exists "$target";
   }
 
+  function :check.absolute target {
+    case "$target" in
+      /*) return 0;;
+    esac
+    return 1
+  }
+
+  function :name file {
+    echo "${file##*/}";
+  }
+
+  function :dirname file {
+    case "$file" in
+      */*)
+        echo "${file%/*}"
+        ;;
+      *)
+        echo ".";;
+    esac
+  }
+
   function :closest target {
-    cdir="${2:-$(pwd)}";
+    nux.log trace "Secondary Path" "$@"
+    cdir=$(realpath -m "${1:-$(pwd)}");
   	nux.log trace "Searching in: " $cdir;
   	until [ -e "$cdir/$target" -o "$cdir" == "/" ]; do
   		 cdir=$(dirname "$cdir");
@@ -20,15 +42,23 @@ nux.use nux/check
   }
 
   function :path.relative.pwd target {
-    realpath -Lms --relative-to="$(pwd)" "$target"
+    :path.relative "." "$target"
   }
 
   function :path.relative base target {
     realpath -Lms --relative-to="$base" "$target"
   }
 
+  function :symlink.target symlink {
+    readlink "$symlink";
+  }
+
   function :path.display target {
     echo $NC_LightPurple$(nux.fs.path.relative.pwd "$target")$NC_No;
+  }
+
+  function :move target {
+    :stage mv -t "$target" "$@"
   }
 
   function :symlink target dir name {
