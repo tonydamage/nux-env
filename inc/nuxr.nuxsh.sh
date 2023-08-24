@@ -89,7 +89,7 @@ nux.use nuxr/repl
     nux.log trace "doc_start" $doc_start $code_start
     if [ -n "$doc_start" -a -n "$code_start" ] {
       sed -n "$doc_start,$code_start"p "$script" \
-        | grep "^\#\#" \
+        | grep "^##" \
         | sed -re "s/^#+ ?(.*)/\1/gi" \
         | nux.help.shelldoc
         return 0
