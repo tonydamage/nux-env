@@ -1,9 +1,9 @@
 #!/usr/bin/env nuxr-nuxsh
 ## Portable *nix environment by tonydamage
 
-## status::
-##   Show status of nux-env installation
-
+##
+##  status::
+##    Show status of nux-env installation
 @namespace task. {
   function :status {
       echo nux-env folder: $NUX_ENV_DIR
@@ -12,8 +12,9 @@
       popd > /dev/null
   }
 
-## update::
-##   pulls latest nux-env from repository.
+##
+##  update::
+##    pulls latest nux-env from repository.
   function :update {
     pushd $NUX_ENV_DIR > /dev/null
     git stash
@@ -22,12 +23,35 @@
     popd > /dev/null
 }
 
+##
 ##  install::
 ##    Install nux-env recommended binaries if not present
   function :install {
-    :
-
+    echo $NUX_ENV_DIR
+    :symlink bashrc .bashrc
   }
+
+  function :symlink source target {
+    local env=~
+    target=${env}/${target}
+    source=${NUX_ENV_DIR}/${source}
+    real_source=$(realpath $source)
+    nux.log debug "$target" is symlink to "$real_source"
+    if [ -e "$target" ] {
+      nux.log debug "$target" exists
+      if [ -h "$target" ] {
+          link_target=$(realpath $target)
+          if [ "$real_source" =  "$link_target" ] {
+            nux.log debug "$target" is already symlink to $source
+            return;
+          }
+          nux.log debug "$target" is symlink to "$link_target"
+
+      }
+    }
+  }
+
+##
 ##  fixmes::
 ##     List all fixmes for nux-env
   function :fixmes {
@@ -35,9 +59,10 @@
     find "$NUX_INC_DIR"  -iname "*.sh" | xargs fgrep -n FIXME
   }
 
+
+##
 ##  help library:: <inc>
 ##     Displays help for specified nuxs-env library.
-##
   function :help.library name {
     nux.log debug "Library"
     if [ -e "$NUX_INC_DIR/$name.inc.sh" ] {

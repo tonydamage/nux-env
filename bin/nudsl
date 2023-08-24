@@ -5,7 +5,7 @@
 ## highlight:: <language> <file>
 
 task.highlight() {
-
+  nux.use nux/nuxsh
   nux.dsl.process highlight nux.nuxsh.language.def "$2"
 }
 
@@ -23,8 +23,10 @@ task.plan.compile() {
 }
 
 task.plan.preview() {
-  nux.dsl.plan nux.nuxsh.language "$2"
-  plan="$(nudsl.plan.file "$1" "$2")"
+  nux.use nux/nuxsh
+  nux.dsl.plan nux.nuxsh.language.def "$1"
+  plan="$(nudsl.plan.file nux.nuxsh.language.def "$1")"
+  nux.log info "Plan file: $plan"
   if [ -e "$plan" ]; then
     if [ -n "$(which pygmentize)" ]; then
        pygmentize -l bash "$plan";

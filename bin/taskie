@@ -14,7 +14,7 @@ nux.use taskie/backend.dir
 
 function with.backend backendId {
   backend=$(echo $backendId | cut -d: -f1);
-  nux.exec.optional backend.$backend.with;
+  nux.exec.optional backend.$backend.with "$backendId";
 }
 
 function endwith.backend {
@@ -40,6 +40,7 @@ function endwith.backend {
     if ! backend.$backend.issue.exists "$@" ; then
       local labels=$(backend.$backend.labels.id)
       nux.log debug "Labels: $labels"
+
       label=$(echo "$labels" | grep -G "^$1:")
       local labelName=""
       local labelId=""
