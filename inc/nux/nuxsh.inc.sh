@@ -120,7 +120,7 @@ nux.nuxsh.language.def() {
         prepend=$_namespace;
       fi
       if [ -z "$prepend" ] ; then
-        nudsl.process.fail "undefined prefix: $prefix";
+        nux.dsl.process.fail "undefined prefix: $prefix";
       fi
       echo "$prepend$identifier"
     else
@@ -175,6 +175,7 @@ nux.nuxsh.language.def() {
      for arg in ${args//,/ }; do
        echo "${indent}  local $arg="'"$1"'";shift;"
        echo "${indent}  nux.log trace  '  ' arg $arg: "'$'$arg";"
+       echo "${indent}  nux.log trace  '  ' rest: " '"$@";'
      done
   }
 
@@ -189,6 +190,7 @@ nux.nuxsh.language.def() {
      for arg in ${args//,/ }; do
        echo "${indent}  local $arg="'"$1"'";shift;"
        echo "${indent}  nux.log trace  '  ' arg $arg: "'$'$arg";"
+       echo "${indent}  nux.log trace  '  ' rest: " '"$@";'
      done
   }
 
