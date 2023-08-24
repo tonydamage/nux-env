@@ -2,9 +2,117 @@
 
 nux.use nux/fs
 @prefix fs nux.fs.
+@prefix check nux.check.
 
-MARK_DIR_NAME=.by
+MARK_DIR_NAME="${MARK_DIR_NAME:-.by}"
 MARK_PREFIX=""
+
+
+## Manages symlinks in closest mark (**.by**) directory, provides functionality to batch create
+## them with relative paths.
+##
+## #Available tasks:
+##   tag:: <task> <task arguments...>
+##     Performs specified task in tag namespace (marks prefixed with **tag/**)
+@command tag task {
+  MARK_PREFIX="tag/"
+  nuxr.run "$task" "$@"
+}
+
+##   this:: <mark> [marks...]
+##     Marks **current folder** with specific markers.
+##     This creates symlinks in **mark** folder pointing to **current folder**.
+@command this mark {
+  nux.log debug "Args $#"
+  item=$(pwd)
+  mark_root=$(mark.dir "$item")
+  mark.mark "$mark_root" "$item" "$MARK_PREFIX$mark"
+  while [ "$#" -gt 0 ]; do
+    mark="$1"; shift;
+    mark.mark "$mark_root" "$item" "$MARK_PREFIX$mark"
+  done
+}
+
+##   multiple:: <mark> <files...>
+##     Marks **files** with specific **mark**.
+##     This creates symlinks for files in **mark** folder.
+@command multiple mark {
+  pwd=$(pwd)
+  mark_root=$(mark.dir "$pwd")
+  while [ "$#" -gt 0 ]; do
+    item="$1"; shift;
+    mark.mark "$mark_root" "$pwd/$item" "$MARK_PREFIX$mark"
+  done
+}
+
+##   display:: [mark]
+##     Displays path to current mark folder and displays available marks.
+##     If **mark** is provided list nested marks.
+@command display mark {
+  mark_root=$(mark.dir $pwd)
+  prefix="$MARK_PREFIX"
+  if [ -n "$mark" ]; then
+    prefix="$MARK_PREFIX$mark/";
+  fi
+  echo $mark_root:
+  (
+    cd "$mark_root";
+    for mark in  "$prefix"* ; do
+      echo ${mark#$MARK_PREFIX};
+    done;
+    )
+}
+##   mark-to-target:: mark target [suffix]
+##     Moves non-symlinks to *target* and creates symlinks in mark folder
+##     This also applies to submarks
+@command mark-to-target mark target {
+  suffix="$1";
+  nux.log info "Suffix is $suffix"
+  mark=$(mark.dir $pwd)/$mark
+  nux.log debug $(mark.dir $pwd) $mark;
+  find "$mark" -type f | while read file; do
+    if ! nux.check.file.symlink "$file"; then
+      name=$(nux.fs.name "$file")
+      file_mark=$(nux.fs.dirname "$file")
+      fs:info "$file" Moving to $target/$name
+      fs:move "$target" "$file"
+      fs:info "$target/$name" Creating symlink in $file_mark
+      fs:symlink "$target/$name" "$file_mark" "$name"
+    fi
+  done
+}
+
+##   visual:: [image+]
+##     Display images using feh and allows adding marks using 1-9 key.
+##     The list of marks is speficied by environment variable *MARK_TAGS*
+##
+@command visual {
+  nux.require feh
+  marks=${MARK_TAGS:-person woman man selfie}
+  mark_root=$(nux.fs.path.relative.pwd $(mark.dir $pwd/))
+  actions="";
+  for mark in $marks; do
+    ((i++))
+    mark=$MARK_PREFIX$mark
+    if [ $i -gt 9 ]; then
+      break;
+    fi
+    action="--action$i '[$mark] mkdir -p $mark_root/$mark; ln -svft $mark_root/$mark \$(realpath -Lms --relative-to=$mark_root/$mark %F)'";
+    actions="$actions $action";
+
+  done;
+  nux.log debug Feh actions "$actions"
+  nux.eval feh \
+    --zoom max \
+    --scale-down \
+    -g 900x1000 \
+    -G \
+    "--action '[keep]echo %F: Next file.'" \
+    "$actions" \
+    "--info 'echo %n: %wx%h'" \
+    --draw-tinted  "$@"
+}
+
 
 @namespace mark. {
   function :dir item {
@@ -28,59 +136,3 @@ MARK_PREFIX=""
   }
 
 }
-
-## Manages symlinks in closest mark (**.by**) directory, provides functionality to batch create
-## them with relative paths.
-##
-## #Available tasks:
-@namespace task. {
-##   tag:: <task> <task arguments...>
-##     Performs specified task in tag namespace (marks prefixed with **tag/**)
-@command tag task {
-    MARK_PREFIX="tag/"
-    nuxr.run "$task" "$@"
-  }
-
-##   this:: <mark> [marks...]
-##     Marks **current folder** with specific markers.
-##     This creates symlinks in **mark** folder pointing to **current folder**.
-@command this mark {
-    nux.log debug "Args $#"
-    item=$(pwd)
-    mark_root=$(mark.dir "$item")
-    mark.mark "$mark_root" "$item" "$MARK_PREFIX$mark"
-    while [ "$#" -gt 0 ]; do
-      mark="$1"; shift;
-      mark.mark "$mark_root" "$item" "$MARK_PREFIX$mark"
-    done
-  }
-
-##   multiple:: <mark> <files...>
-##     Marks **files** with specific **mark**.
-##     This creates symlinks for files in **mark** folder.
-@command multiple mark {
-    pwd=$(pwd)
-    mark_root=$(mark.dir "$pwd")
-    while [ "$#" -gt 0 ]; do
-      item="$1"; shift;
-      mark.mark "$mark_root" "$pwd/$item" "$MARK_PREFIX$mark"
-    done
-  }
-
-##   display:: [mark]
-##     Displays path to current mark folder and displays available marks.
-##     If **mark** is provided list nested marks.
-@command display mark {
-    mark_root=$(mark.dir $pwd)
-    prefix="$MARK_PREFIX"
-    if [ -n "$mark" ]; then
-      prefix="$MARK_PREFIX$mark/";
-    fi
-    echo $mark_root:
-    (
-      cd $(mark_root);
-      for mark in  "$prefix"* ; do
-        echo ${mark#$MARK_PREFIX};
-      done;
-    )
-  }
