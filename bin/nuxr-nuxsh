@@ -141,9 +141,14 @@ if [ -n  "$NUX_SCRIPT" ]; then
   	nux.log debug  "Including script: $NUX_SCRIPT"
     nux.log trace "NUX_SCRIPT env: " $(set | grep NUX_SCRIPT)
 
+    compiledir=${TMPDIR:=/tmp}
     compilefile=$(realpath "$NUX_SCRIPT" | md5sum | cut -d" " -f1)
-    #FIXME: check if nux_cache should be used.
-    compilefile="$TMPDIR/$compilefile.nuxr.nuxsh"
+    #FIXME: If App in NUX-ENV, use global cache and not generated naming.
+    if [ "$NUX_ENV_DIR" = "$NUXR_APP_DIR" ]; then
+      compiledir="$NUX_CACHE_DIR/bin"
+      compilefile="$NUXR_APP_NAME"
+    fi
+    compilefile="$compiledir/$compilefile.nuxr.nuxsh"
     nux.log debug "Compiled script:" $compilefile
     nux.nuxsh.use "$NUX_SCRIPT" "$compilefile";
     NUX_NO_INCLUDE="no-include"

@@ -175,8 +175,8 @@ nux.nuxsh.language.def() {
      for arg in ${args//,/ }; do
        echo "${indent}  local $arg="'"$1"'";shift;"
        echo "${indent}  nux.log trace  '  ' arg $arg: "'$'$arg";"
-       echo "${indent}  nux.log trace  '  ' rest: " '"$@";'
      done
+     echo "${indent}  nux.log trace  '  ' additional args: " '"$@";'
   }
 
   .match.task_start.plan() {
@@ -190,8 +190,8 @@ nux.nuxsh.language.def() {
      for arg in ${args//,/ }; do
        echo "${indent}  local $arg="'"$1"'";shift;"
        echo "${indent}  nux.log trace  '  ' arg $arg: "'$'$arg";"
-       echo "${indent}  nux.log trace  '  ' rest: " '"$@";'
      done
+     echo "${indent}  nux.log trace  '  ' additional args: " '"$@";'
   }
 
   .block.start.plan() {
