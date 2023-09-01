@@ -16,7 +16,7 @@
 
   function :comment source {
     if nux.check.file.exists "$source" ; then
-      grep -E "^\#\#( |$)" "$source" \
+      grep -E "^##( |$)" "$source" \
         | cut -d\# -f3- \
         | cut -d" " -f2- \
         | nux.help.shelldoc
