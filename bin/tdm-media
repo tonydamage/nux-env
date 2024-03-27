@@ -1,4 +1,4 @@
-#!/usr/bin/env nuxr-nuxsh
+#!/usr/bin/env nuxsh
 
 nux.use nux/fs
 
