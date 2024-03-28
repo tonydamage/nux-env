@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 ###
-### *nuxr-nuxsh* is wrapped bash interpreter for *nux-env* enhanced bash scripts
-### and provides out of the box support for command-style scripts (similar in
-### usage such as apt, git) with following features out of the box:
+### *nuxr-nuxsh* and *nuxsh* is wrapped bash interpreter for *nux-env* enhanced
+### bash scripts.
+### It provides out of the box support for command-style scripts
+### (similar in  usage such as apt, git) with following features out of the box:
 ###
 ###   task selection::
 ###        Automaticly selects correct tasks, displays help if
@@ -25,7 +26,7 @@
 ###
 ###
 ### 1. Shebang::
-###    Shebang (*#!*) at the start of file is *#!/usr/bin/env nuxr-nuxsh*
+###    Shebang (*#!*) at the start of file is *#!/usr/bin/env nuxsh*
 ### 2. Tasks::
 ###    Script usually does only defines functions in form task {taskname}
 ###    where taskname
@@ -44,12 +45,9 @@ nux.use nuxr
 nux.use nux.cfg
 
 ##
-## Additional commands provided by *nux-runner*:
-### *nux-runner* automaticly provides following tasks to any script it executes:
-
+## Additional commands provided by *nuxsh*:
+### *nuxsh* automaticly provides following tasks to any script it executes:
 ##
-
-
 
 ##    debug:: <task> [<task arguments>]
 ##      Runs specified task with debug messages enabled.
@@ -70,6 +68,7 @@ task.trace() {
 ##      documentation.
 task.help() {
   nuxr.task.help "$@"
+  echo
 }
 
 ##    config:: [type] name [value]
@@ -158,9 +157,8 @@ if [ -n  "$NUX_SCRIPT" ]; then
 
   nuxr.main "$@"
 else
-
-  echo  Usage: nux-runner [script] [task] [options]
+  echo  Usage: nuxsh [script] [command] [options]
   echo
-  grep "^\#\#" "$NUX_RUNNER" | sed -re "s/^#+ ?(.*)/\1/gi"  | nux.help.shelldoc
+  nux.help.comment "$NUX_RUNNER"
   echo
 fi
