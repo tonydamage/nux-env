@@ -111,6 +111,20 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   nux.fs.info "$output" "Created"
 }
 
+@command split-horizontally image {
+  suffix=${image##*.}
+  basename=${image%.*}
+  $NUX_MAGICK convert  "$image" -gravity east -chop 50%x0% "$basename.1.$suffix"
+  $NUX_MAGICK convert  "$image" -gravity west -chop 50%x0% "$basename.2.$suffix"
+}
+
+@command split-vertically image {
+  suffix=${image##*.}
+  basename=${image%.*}
+  $NUX_MAGICK convert  "$image" -gravity north -chop 0%x50% "$basename.1.$suffix"
+  $NUX_MAGICK convert  "$image" -gravity south -chop 0%x50% "$basename.2.$suffix"
+}
+
 ##   list-smaller:: <size> <image...>
 ##     Lists images smaller than **size**.
 @command list-smaller size {
