@@ -33,6 +33,17 @@ MARK_PREFIX=""
   done
 }
 
+##   file:: <file> <marks...>
+##     Marks **files** with specific **mark**.
+##     This creates symlinks for files in **mark** folder.
+@command file file {
+  mark_root=$(mark.dir "$pwd")
+  while [ "$#" -gt 0 ]; do
+    mark="$1"; shift;
+    mark.mark "$mark_root" "$file" "$MARK_PREFIX$mark"
+  done
+}
+
 ##   multiple:: <mark> <files...>
 ##     Marks **files** with specific **mark**.
 ##     This creates symlinks for files in **mark** folder.
@@ -89,7 +100,9 @@ MARK_PREFIX=""
 @command visual {
   nux.require feh
   marks=${MARK_TAGS:-person woman man selfie}
-  mark_root=$(nux.fs.path.relative.pwd $(mark.dir $pwd/))
+  mark_root="$(nux.fs.path.relative.pwd $(mark.dir "$pwd"))"
+  #mark_root=$(mark.dir $pwd)
+  nux.log debug "Mark Root:" $mark_root
   actions="";
   for mark in $marks; do
     ((i++))
