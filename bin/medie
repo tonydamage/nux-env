@@ -2,6 +2,10 @@
 
 nux.use nux/fs
 
+@prefix fs nux.fs.
+@prefix check nux.check.
+
+
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
 type gm > /dev/null 2>&1 && NUX_MAGICK=gm
@@ -55,6 +59,16 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   nuxr.run "$task" "$@"
 }
 
+@command inplace task {
+  NUX_INPLACE=true
+  nuxr.run "$task" "$@"
+}
+
+@command target-dir dir task {
+  NUX_TARGET_DIR="$dir"
+  nuxr.run "$task" "$@"
+}
+
 ##   downscale:: <target> <size> <image...>
 ##     Creates downscaled copy of image in *target* directory.
 ##     Image is downsampled to fit in *size*. Smaller images are not upscaled.
@@ -72,9 +86,9 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
       target_file="${target_dir}/$name";
     fi
     if $SKIP_CHECK "$target_file" ; then
-      echo "Image: $i/$count Skipping"
+      nux.log debug "$target_file" "($i/$count) Skipping"
     else
-      echo "Image: $i/$count Downsampling  $image -> '$target_file'"
+      fs:info "$target_file" "($i/$count) Downsampling from  $image"
       $NUX_MAGICK convert "$image" \
         -filter Lanczos -sampling-factor 1x1 \
         -resize "${SIZE}x${SIZE}>" \
@@ -100,6 +114,32 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   done
 }
 
+##   datetime-name:: <image...> 
+##     Normalizes name to format `yyyymmdd_hhmmss.suffix`
+###
+###     Useful for:
+###      - generating RGBD Images for *holograms* - *left is color* space, *right is depth*
+###      - joining Instagram photos in slideshow, where photo is splitted in middle 
+@command datetime-name {
+  for file in "$@"; do
+    date=$($NUX_MAGICK identify -format "%[EXIF:DateTimeOriginal]" "$file" 2> /dev/null)
+    nux.log debug $file date is "'$date'"
+    if [ "(" -n "$date" ")" -a "(" "$date" != "unknown" ")" ]; then
+      target_dir=$(dirname "$file");
+      target_file=${date//:/};
+      target_file=${target_file/ /_};
+      target_suffix=${file##*.}
+      target_suffix=${target_suffix,,}
+      target_full="$target_dir/$target_file.$target_suffix";
+      fs:info "$file" Moving to: $target_full
+      fs:stage mv "$file" "$target_full"  
+    else
+      fs:warning "$file" Can not identify date from EXIF
+    fi
+  done
+}
+
+
 ##   side-by-side:: <left> <right> <output> 
 ##     Joins two images horizontal (assuming they have same size).
 ###
@@ -123,6 +163,17 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   basename=${image%.*}
   $NUX_MAGICK convert  "$image" -gravity north -chop 0%x50% "$basename.1.$suffix"
   $NUX_MAGICK convert  "$image" -gravity south -chop 0%x50% "$basename.2.$suffix"
+}
+
+
+@command crop-to-aspect aspect gravity {
+  aspect_suffix=${aspect/:/_}
+  for image in "$@"; do
+    target="$(target.from "$image" "$aspect_suffix")";    
+    #nux.fs.info "$image": Target image: "$target"
+    convert  "$image" -gravity "$gravity" -crop "$aspect" "$target"
+    nux.fs.info "$target" "Image cropped to aspect ratio: $aspect"
+  done;
 }
 
 ##   list-smaller:: <size> <image...>
@@ -207,6 +258,8 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
       --draw-tinted "$@"
 }
 
+
+
 function img.largest {
   ## FIXME: Identify largest image
   nux.fs.path.relative.pwd "$1";
@@ -224,6 +277,28 @@ function no_skip {
   return 1;
 }
 
+function target.from image qualifier extension {
+  if [ -n "$NUX_INPLACE" ]; then
+    nux.log trace "Inplace edit: $image"
+    echo "$image"
+  else
+    orig_extension="${image##*.}"
+    basename="${image%.*}"
+    #if [-n "$NUX_TARGET_DIR" ];
+    #target_dir="$NUX_TARGET_DIR"
+    
+    target="$basename"
+    if [ -n "$qualifier" ]; then
+      target="$target.$qualifier"
+    fi
+    if [ -n "$extension" ]; then
+      target="$target.$extension"
+    else
+      target="$target.$orig_extension"
+    fi
+    echo $target
+  fi
+}
 
 @command mass-crop label target {
   for img in "$@"; do
