@@ -126,6 +126,43 @@ MARK_PREFIX=""
     --draw-tinted  "$@"
 }
 
+##   unmarked:: mark [file+]
+##     List files, which are not marked by particular mark
+##     Note that this assumes current filename is same
+##     TODO: Add support for different filenames in future
+##
+@command unmarked mark {
+  mark_root=$(mark.dir $pwd)
+  nux.log debug $(mark.dir $pwd) $mark_root;
+  for path in "$@"; do
+    nux.log debug "Checking file $path";
+    name=${path##*/};
+    marks="$(mark.marks-for-path "$mark_root" "$mark" "$path")"
+      nux.log debug "$path has '$marks'";
+    if [ -z "$marks" ]; then
+      echo $path;
+    fi
+  done
+
+}
+
+##   unmarked:: mark [file+]
+##     List files, which are not marked by particular mark
+##     Note that this assumes current filename is same
+##     TODO: Add support for different filenames in future
+##
+@command list {
+  mark_root=$(mark.dir $pwd)
+  nux.log debug $(mark.dir $pwd) $mark_root;
+  for path in "$@"; do
+    nux.log debug "Checking file $path";
+    name=${path##*/};
+    marks="$(mark.marks-for-path "$mark_root" "$mark" "$path")"
+    for m in ${marks}; do
+      fs:info "$path" "$m"
+    done
+  done
+}
 
 @namespace mark. {
   function :dir item {
@@ -146,6 +183,15 @@ MARK_PREFIX=""
       fs:info "$item" Creating symlink in $(nux.fs.path.display "$root/$mark")
     fi
     fs:symlink "$item" "$root/$mark" "$name"
+  }
+
+  function :marks-for-path root mark path {
+    name=${path##*/};
+    find "$root/$mark" -iname "$name" 2> /dev/null | while read mark; do
+      m="${mark#$root/}"
+      m="${m%/*}";
+      echo "$m";
+    done
   }
 
 }
