@@ -176,6 +176,19 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   done;
 }
 
+@command expand aspect gravity color {
+  aspect_suffix=${aspect/:/_}
+  for image in "$@"; do
+    target="$(target.from "$image" "$aspect_suffix")";    
+    #nux.fs.info "$image": Target image: "$target"
+    gm convert $image -background $color -gravity $gravity -extent $aspect $target
+    nux.fs.info "$target" "Image cropped to aspect ratio: $aspect"
+  done;
+}
+
+
+
+
 ##   list-smaller:: <size> <image...>
 ##     Lists images smaller than **size**.
 @command list-smaller size {
