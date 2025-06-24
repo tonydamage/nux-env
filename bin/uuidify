@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+for file in "$@"; do
+        name="${file##*/}";
+        if [[ ! "$name" =~ \.[0-9a-fA-F]{32}\. ]]; then
+                prefix="${file%.*}";
+                suffix="${file##*.}";
+                uuid=$(cat /proc/sys/kernel/random/uuid | tr -d "-");
+                echo "$file" uuidifying
+                mv -v "$file" "${prefix}.${uuid}.${suffix}";
+        fi
+done

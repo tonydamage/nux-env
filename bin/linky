@@ -1,0 +1,48 @@
+#!/usr/bin/env nuxsh
+
+nux.use nux/fs
+
+## Symlink management tool
+##
+
+## relativize:: <link>
+##   Converts absolute symlinks to relative ones
+##
+@command relativize {
+  for p in "$@"; do
+    if nux.check.file.symlink "$p"; then
+      target=$(nux.fs.symlink.target "$p");
+
+      if nux.fs.check.absolute "$target"; then
+        link_dir=$(nux.fs.dirname "$p")
+        link_name=$(nux.fs.name "$p")
+        nux.fs.info "$p" Relativizing symlink
+        nux.fs.symlink "$target" "$link_dir" "$link_name"
+      fi
+    fi
+  done
+}
+
+## remove-source:: <link>
+##   Removes the source of a symlink and any symbolic links that were encountered
+##   during dereferencing.
+##
+@command remove-source {
+  for p in "$@"; do
+    if nux.check.file.symlink "$p"; then
+      target="$(realpath "$p")"
+      next="$p"
+      while [ -L "$next" ]; do
+        current="$next"
+        next=$(nux.fs.symlink.target "$current")
+        nux.fs.info "$current" Deleting symlink
+        rm "$current"
+      done
+      if [  -e "$target" ]; then
+        nux.fs.info "$target" Deleting source
+        rm "$target"
+      fi
+       
+    fi 
+  done
+}
