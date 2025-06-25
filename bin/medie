@@ -151,6 +151,18 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   nux.fs.info "$output" "Created"
 }
 
+##   top-bottom:: <rop> <bottom> <output> 
+##     Joins two images vertically (assuming they have same size).
+###
+###     Useful for:
+###      - joined splitted images during editing 
+@command top-bottom top bottom output {
+  $NUX_MAGICK montage -mode concatenate "$top" "$bottom" -geometry +0+0 -tile 1x2  -quality $QUALITY "$output"
+  nux.fs.info "$output" "Created"
+}
+
+##   split-horizontally:: <image>
+##
 @command split-horizontally image {
   suffix=${image##*.}
   basename=${image%.*}
@@ -158,6 +170,8 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   $NUX_MAGICK convert  "$image" -gravity west -chop 50%x0% "$basename.2.$suffix"
 }
 
+##   split-vertically:: <image>
+##
 @command split-vertically image {
   suffix=${image##*.}
   basename=${image%.*}
@@ -165,7 +179,10 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   $NUX_MAGICK convert  "$image" -gravity south -chop 0%x50% "$basename.2.$suffix"
 }
 
-
+##   crop-to-aspect:: <aspect> <gravity> <image...>
+##     Crops image to specified aspect ratio.
+###    Aspect is specified as `width:height`, e.g. `16:9`.
+###    Gravity is specified as `north`, `south`, `east`, `west`, `center` or `none`.
 @command crop-to-aspect aspect gravity {
   aspect_suffix=${aspect/:/_}
   for image in "$@"; do
@@ -176,13 +193,18 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
   done;
 }
 
-@command expand aspect gravity color {
-  aspect_suffix=${aspect/:/_}
+##   expand:: <size> <gravity> <color> <image...>
+##     Expands image to specified size, filling empty space with color.
+###    Size is specified as `widthxheight`, e.g. `1920x1080`.
+###    Gravity is specified as `north`, `south`, `east`, `west`, `center` or `none`.
+###    Color is specified as `#RRGGBB` or `color name`, e.g. `#000000` or `white`.
+@command expand size gravity color {
+  aspect_suffix=${size/:/_}
   for image in "$@"; do
     target="$(target.from "$image" "$aspect_suffix")";    
     #nux.fs.info "$image": Target image: "$target"
-    gm convert $image -background $color -gravity $gravity -extent $aspect $target
-    nux.fs.info "$target" "Image cropped to aspect ratio: $aspect"
+    gm convert $image -background $color -gravity $gravity -extent $size $target
+    nux.fs.info "$target" "Image expanded to aspect ratio: $size"
   done;
 }
 
