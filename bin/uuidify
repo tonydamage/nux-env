@@ -1,12 +1,32 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nuxsh
 
-for file in "$@"; do
+##   suffix:: <file>
+##     Adds random UUID suffix to file names if file does not have UUID in name already.
+@command suffix {
+    for file in "$@"; do
         name="${file##*/}";
         if [[ ! "$name" =~ \.[0-9a-fA-F]{32}\. ]]; then
-                prefix="${file%.*}";
-                suffix="${file##*.}";
-                uuid=$(cat /proc/sys/kernel/random/uuid | tr -d "-");
-                echo "$file" uuidifying
-                mv -v "$file" "${prefix}.${uuid}.${suffix}";
+            prefix="${file%.*}";
+            suffix="${file##*.}";
+            uuid=$(cat /proc/sys/kernel/random/uuid | tr -d "-");
+            echo "$file" uuidifying
+            mv -v "$file" "${prefix}.${uuid}.${suffix}";
         fi
-done
+    done
+}
+
+##   fully:: <file>
+##     Renames file to random UUID if file does not have UUID in name already.
+@command fully {
+    for file in "$@"; do
+        name="${file##*/}";
+        if [[ ! "$name" =~ [0-9a-fA-F]{32}\. ]]; then
+            #prefix="${file%.*}";
+            suffix="${file##*.}";
+            uuid=$(cat /proc/sys/kernel/random/uuid | tr -d "-");
+            echo "$file" uuidifying
+            mv -v "$file" "${uuid}.${suffix}";
+        fi
+    done
+}
+
