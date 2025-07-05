@@ -294,7 +294,6 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
 }
 
 
-
 function img.largest {
   ## FIXME: Identify largest image
   nux.fs.path.relative.pwd "$1";
@@ -357,7 +356,61 @@ function target.from image qualifier extension {
       done;
     fi
   done;
+}
 
+
+@command video-reverse {
+  for video in "$@"; do
+    target=$(target.from "$video" "reversed")
+    #target_dir=$(dirname "$target")
+    #nux.log debug "Directory is $target_dir"
+    #tmp=$(mktemp -p "$target_dir")
+    if [ "$target" = "$video" ]; then
+      tmp=$(mktemp -p "$target_dir")
+      mv -f "$video" "$tmp"
+      video="$tmp"
+    fi
+    nux.fs.info "$target" "Output is '$target'"
+    ffmpeg -y -i  "$video" -vf reverse "$target" &> /dev/null
+    if [ -e "$tmp" ]; then
+      rm "$tmp"
+    fi
+  done
+}
+
+
+@command video-concat target {
+  tmp=$(mktemp -p "$target_dir")
+  for video in "$@"; do
+    echo "file" "'$(realpath "$video")'" >> "$tmp";
+  done
+  ffmpeg -y -f concat -safe 0 -i "$tmp"  "$target" &> /dev/null
+  nux.fs.info "$target" "Created from '$@'"
+  if [ -e "$tmp" ]; then
+      rm -v "$tmp"
+  fi
+}
+
+@command video-pingpong {
+  for video in "$@"; do
+    target=$(target.from "$video" "pingpong")
+    #target_dir=$(dirname "$target")
+    #nux.log debug "Directory is $target_dir"
+    #tmp=$(mktemp -p "$target_dir")
+    NUX_INPLACE="" $(task.video-reverse "$video")
+    reversed=$(target.from "$video" "reversed")
+
+    if [ "$target" = "$video" ]; then
+      tmp=$(mktemp -p "$target_dir")
+      mv -f "$video" "$tmp"
+      video="$tmp"
+    fi
+    task.video-concat "$target" "$video" "$reversed"
+    rm -v "$reversed"
+    if [ -e "$tmp" ]; then
+      rm -v "$tmp"
+    fi
+  done
 
 
 }
