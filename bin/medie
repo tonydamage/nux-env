@@ -384,7 +384,7 @@ function target.from image qualifier extension {
   for video in "$@"; do
     echo "file" "'$(realpath "$video")'" >> "$tmp";
   done
-  ffmpeg -y -f concat -safe 0 -i "$tmp"  "$target" &> /dev/null
+  ffmpeg -y -f concat -safe 0 -i "$tmp" -c copy "$target" &> /dev/null
   nux.fs.info "$target" "Created from '$@'"
   if [ -e "$tmp" ]; then
       rm -v "$tmp"
