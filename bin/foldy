@@ -1,0 +1,35 @@
+#!/usr/bin/env nuxr-nuxsh
+nux.use nux/fs
+
+CLOSEST=$(nux.fs.closest .foldy.nuxsh)
+
+##   suffix:: <file>
+##     Adds random UUID suffix to file names if file does not have UUID in name already.
+@command list {
+    nux.fs.info "Listing foldy files in $CLOSEST"
+}
+
+@command help.additional {
+    echo "Tasks defined in ${NC_White}$CLOSEST${NC_No}"
+    echo "Custom Help"
+    nux.help.comment "$CLOSEST"
+
+}
+
+nuxr.run.additional {
+    if [[ -f "$CLOSEST" ]]; then
+        nux.log debug Loading sources fron "$CLOSEST"
+        
+        nux.nuxsh.use "$CLOSEST"
+    fi
+    
+    if nux.check.function task.$TASK; then 
+      nux.log debug  "Running task: $TASK";
+      nux.log debug  "Working dir: $(pwd)"
+      task.$TASK "$@" # Runs task
+    else
+      echo "$NUX_SCRIPTNAME: Unrecognized task  '$TASK' not available."
+      echo "Try '$NUX_SCRIPTNAME help' for more information."
+      return -1
+    fi
+}

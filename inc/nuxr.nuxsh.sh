@@ -8,15 +8,18 @@ nux.use nux/help
 @namespace nuxr. {
   function :run TASK {
     # FIXME: Add default task
-    if check:function task.$TASK {
+    if nux.check.function task.$TASK; then 
       nux.log debug  "Running task: $TASK";
       nux.log debug  "Working dir: $(pwd)"
       task.$TASK "$@" # Runs task
+    elif nux.check.function nuxr.run.additional; then 
+      nux.log debug  "Running additional task: $TASK";
+      nuxr.run.additional "$TASK" "$@"
     else
       echo "$NUX_SCRIPTNAME: Unrecognized task  '$TASK' not available."
       echo "Try '$NUX_SCRIPTNAME help' for more information."
       return -1
-    }
+    fi
   }
 
   function :run.subtask SUBTASK {
