@@ -3,10 +3,19 @@ nux.use nux/fs
 
 CLOSEST=$(nux.fs.closest .foldy.nuxsh)
 
-##   suffix:: <file>
-##     Adds random UUID suffix to file names if file does not have UUID in name already.
+##   list:: List Available foldy integrated directories
 @command list {
-    nux.fs.info "Listing foldy files in $CLOSEST"
+    #nux.fs.info "Listing foldy files in $CLOSEST"
+    find -iname ".foldy.nuxsh" | while read line; do
+      echo "${line%.foldy.nuxsh}"
+    done
+}
+
+
+##   exec:: <path> <command> [<args>]
+##     Run foldy command in directory.
+@command run path command {
+  (cd $path; foldy $command "$@" )
 }
 
 @command help.additional {
@@ -16,20 +25,22 @@ CLOSEST=$(nux.fs.closest .foldy.nuxsh)
 
 }
 
-nuxr.run.additional {
-    if [[ -f "$CLOSEST" ]]; then
-        nux.log debug Loading sources fron "$CLOSEST"
-        
-        nux.nuxsh.use "$CLOSEST"
-    fi
-    
-    if nux.check.function task.$TASK; then 
-      nux.log debug  "Running task: $TASK";
-      nux.log debug  "Working dir: $(pwd)"
-      task.$TASK "$@" # Runs task
-    else
-      echo "$NUX_SCRIPTNAME: Unrecognized task  '$TASK' not available."
-      echo "Try '$NUX_SCRIPTNAME help' for more information."
-      return -1
-    fi
+@namespace nuxr.run. {
+  function :additional TASK {
+      if [[ -f "$CLOSEST" ]]; then
+          nux.log debug Loading sources fron "$CLOSEST"
+          
+          nux.nuxsh.use "$CLOSEST"
+      fi
+      
+      if nux.check.function task.$TASK; then 
+        nux.log debug  "Running task: $TASK";
+        nux.log debug  "Working dir: $(pwd)"
+        task.$TASK "$@" # Runs task
+      else
+        echo "$NUX_SCRIPTNAME: Unrecognized task  '$TASK' not available."
+        echo "Try '$NUX_SCRIPTNAME help' for more information."
+        return -1
+      fi
+  }
 }
