@@ -10,7 +10,7 @@ type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
 type gm > /dev/null 2>&1 && NUX_MAGICK=gm
 
-QUALITY=${QUALITY:=95}
+QUALITY=${QUALITY:=90}
 DUPLICATE_THRESHOLD=${DUPLICATE_THRESHOLD:=90%}
 SKIP_CHECK=no_skip
 nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
