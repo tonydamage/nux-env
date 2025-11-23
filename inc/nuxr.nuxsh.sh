@@ -58,8 +58,8 @@ nux.use nux/help
     if [ -z "$allArgs" ] {
       echo Usage: $NC_Bold$NUX_SCRIPTNAME ${NC_No}${NC_White}\<command\>${NC_No} [\<options\>]
       help:comment "$NUX_SCRIPT"
-      help:comment "$NUX_RUNNER"
       nux.exec.optional task.help.additional
+      help:comment "$NUX_RUNNER"
     else
       :topic "$@"
     }
