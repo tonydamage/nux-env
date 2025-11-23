@@ -1,16 +1,27 @@
 #!/usr/bin/env nuxr-nuxsh
 nux.use nux/fs
 
-CLOSEST=$(nux.fs.closest .foldy.nuxsh)
+FOLDY_FILE=.foldy.nuxsh
+CLOSEST=$(nux.fs.closest $FOLDY_FILE)
+FOLDY_DIR=$(dirname "$CLOSEST")
 
 ##   list:: List Available foldy integrated directories
 @command list {
     #nux.fs.info "Listing foldy files in $CLOSEST"
-    find -iname ".foldy.nuxsh" | while read line; do
+    find -name $FOLDY_FILE | while read line; do
       echo "${line%.foldy.nuxsh}"
     done
 }
 
+##   all:: <command> [<args>]
+##     Run foldy command in all descendant foldy managed directories.
+@command all command {
+    find -name $FOLDY_FILE | while read line; do
+      dir="${line%.foldy.nuxsh}"
+      nux.fs.info $dir Running foldy $command
+      task.run "$dir" "$command" "$@"
+    done
+}
 
 ##   exec:: <path> <command> [<args>]
 ##     Run foldy command in directory.
@@ -19,8 +30,8 @@ CLOSEST=$(nux.fs.closest .foldy.nuxsh)
 }
 
 @command help.additional {
-    echo "Tasks defined in ${NC_White}$CLOSEST${NC_No}"
-    echo "Custom Help"
+    echo
+    echo "Tasks defined in ${NC_White}${CLOSEST%$FOLDY_FILE}${NC_No}:"
     nux.help.comment "$CLOSEST"
 
 }
