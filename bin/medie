@@ -110,16 +110,12 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
     target_file=$(basename "$file" | sed -re 's/\.[a-z0-9_]+$//g' -e "s/\$/.$target/g" );
     target_full="$target_dir/$target_file";
     media.to.$target "$file" "$target_full"
-    echo $file $target_file
+    fs:info "$target_full" Created from  $file
   done
 }
 
 ##   datetime-name:: <image...> 
 ##     Normalizes name to format `yyyymmdd_hhmmss.suffix`
-###
-###     Useful for:
-###      - generating RGBD Images for *holograms* - *left is color* space, *right is depth*
-###      - joining Instagram photos in slideshow, where photo is splitted in middle 
 @command datetime-name {
   for file in "$@"; do
     date=$($NUX_MAGICK identify -format "%[EXIF:DateTimeOriginal]" "$file" 2> /dev/null)
@@ -148,7 +144,7 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
 ###      - joining Instagram photos in slideshow, where photo is splitted in middle 
 @command side-by-side left right output {
   $NUX_MAGICK montage -mode concatenate "$left" "$right" -geometry +0+0  -quality $QUALITY "$output"
-  nux.fs.info "$output" "Created"
+  fs:info "$output" "Created"
 }
 
 ##   top-bottom:: <rop> <bottom> <output> 
@@ -158,7 +154,7 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
 ###      - joined splitted images during editing 
 @command top-bottom top bottom output {
   $NUX_MAGICK montage -mode concatenate "$top" "$bottom" -geometry +0+0 -tile 1x2  -quality $QUALITY "$output"
-  nux.fs.info "$output" "Created"
+  fs:info "$output" "Created"
 }
 
 ##   split-horizontally:: <image>
