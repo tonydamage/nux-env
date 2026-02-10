@@ -1,5 +1,11 @@
 #!/usr/bin/env nuxsh
 
+## linky - Symlink management utility
+##
+## Provides tools for managing symbolic links, including converting absolute paths to
+## relative ones and safely removing symlink chains along with their sources. Useful
+## for cleanup operations and standardizing symlink configurations.
+
 nux.use nux/fs
 
 ## Symlink management tool
@@ -42,7 +48,9 @@ nux.use nux/fs
         nux.fs.info "$target" Deleting source
         rm "$target"
       fi
-       
+    else 
+      nux.fs.warning "$p" Not a symlink, still removing
+      rm "$p"
     fi 
   done
 }

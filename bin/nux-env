@@ -1,4 +1,10 @@
 #!/usr/bin/env nuxsh
+## nux-env - Personal Linux environment configuration manager
+##
+## Maintains and updates the nux-env repository with git operations, provides
+## installation symlink management, and lists pending FIXME items. Acts as
+## both a configuration manager and git updater for the personal toolset.
+
 ## Portable *nix environment by tonydamage
 
 ##

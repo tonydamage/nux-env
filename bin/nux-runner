@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
+## nux-runner - Task-based script runner framework
+##
+## Provides a framework for command-style bash scripts with automatic task dispatch,
+## logging (debug/tracelevels), and help generation from comments. Scripts define
+## tasks as `task.{name}` functions and nux-runner handles argument parsing and
+## task lookup. Serves as the underlying infrastructure for nuxsh.
+
 ###
+
 ### *nux-runner* is wrapped bash interpreter for *nux-env* enhanced bash scripts
 ### and provides out of the box support for command-style scripts (similar in
 ### usage such as apt, git) with following features out of the box:

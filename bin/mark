@@ -1,5 +1,11 @@
 #!/usr/bin/env nuxsh
 
+## mark - File tagging and organization system
+##
+## Creates and manages symbolic link hierarchies for tagging files and directories.
+## Uses hidden `.by` directories to store symlinks representing file categories,
+## supporting visual browsing with feh and batch operations on tagged items.
+
 nux.use nux/fs
 @prefix fs nux.fs.
 @prefix check nux.check.

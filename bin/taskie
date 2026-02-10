@@ -1,5 +1,12 @@
 #!/usr/bin/env nuxr-nuxsh
 
+## taskie - Task/task tracking tool with backend abstraction
+##
+## Manages issues/tasks across multiple backends (GitHub, Gogs, local directories).
+## Provides commands to add, list, and manage issues with label support. Automatically
+## detects task backend from repository configuration and supports custom task definitions
+## in taskie configuration files.
+
 # FIXME: Check for configuration
 
 #source ~/.config/nux-env/taskie

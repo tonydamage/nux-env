@@ -1,5 +1,11 @@
 #!/usr/bin/env nuxsh
 
+## uuidify - UUID renaming utility
+##
+## Adds UUIDs to filenames to ensure uniqueness without overwriting existing files.
+## Supports two modes: suffix mode (inserts UUID before extension) and fully mode
+## (replaces entire filename with UUID). Preserves file extensions in both modes.
+
 ##   suffix:: <file>
 ##     Adds random UUID suffix to file names if file does not have UUID in name already.
 @command suffix {

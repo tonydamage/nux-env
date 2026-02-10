@@ -1,5 +1,11 @@
 #!/usr/bin/env nuxsh
 
+## vfs - Virtual filesystem manager using mergerfs
+##
+## Creates and manages virtual filesystems by merging multiple storage backends into
+## a unified mount point. Supports dynamic switching of files between storage locations,
+## source tracking via metadata files, and temporary filesystem setup for transient data.
+
 nux.use nux/fs
 @prefix fs nux.fs.
 

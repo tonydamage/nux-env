@@ -1,5 +1,11 @@
 #!/usr/bin/env nuxsh
 
+## medie - Media file processing utility
+##
+## Provides batch processing tools for images and videos including format conversion,
+## resizing, cropping, and duplicate detection. Integrates with ImageMagick and FFmpeg
+## for media manipulation with support for environment-based quality and threshold settings.
+##
 nux.use nux/fs
 
 @prefix fs nux.fs.
@@ -8,6 +14,8 @@ nux.use nux/fs
 
 type ffmpeg > /dev/null 2>&1 &&  FFMPEG_OR_LIBAV=ffmpeg
 type avconv > /dev/null  2>&1 &&  FFMPEG_OR_LIBAV=avconv
+
+### medie prefers `graphicsmagick` over `imagemagick` for better performance, but supports both.
 type gm > /dev/null 2>&1 && NUX_MAGICK=gm
 
 QUALITY=${QUALITY:=90}
@@ -265,8 +273,9 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
       --action '[keep]echo %F: Keeping file.' \
       --action1 "[move]echo %F: Moving to $set_name ; mkdir -p $set_name ; mv -t $set_name %F ;" \
       --action2 "[symlink]echo %F: Replacing with symlink to $largest ; ln -sf $largest %F ;" \
-      --action3 "[delete] echo %F Removing file; rm -f %F;" \
-      --info 'echo %n: %wx%h' \
+      --action3 "[deep delete] linky remove-source %F " \
+      --action4 "[delete] echo %F Removing file; rm -f %F;" \
+      --info "echo '%n: %wx%h'" \
       --draw-tinted $feh_files
   done
 }
@@ -285,7 +294,7 @@ nux.log debug "FFMPEG: $FFMPEG_OR_LIBAV Magick: $NUX_MAGICK"
       -G \
       --action '[keep]echo %F: Keeping file.' \
       --action3 "[delete] echo %F Removing file; rm -f %F;" \
-      --info 'echo %n: %wx%h' \
+      --info "echo '%n: %wx%h'" \
       --draw-tinted "$@"
 }
 
