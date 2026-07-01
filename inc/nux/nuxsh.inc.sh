@@ -1,5 +1,38 @@
 nux.use nux/dsl
 
+## nux.nuxsh.language.def::
+##   Defines the nuxsh DSL grammar. Registers regex patterns for:
+##   @namespace blocks, @command functions, function blocks, bare if
+##   statements, prefixed identifiers, regular statement lines, and the rule
+##   (bare @syntax) line matcher.
+##   Produces output in plan mode that generates plain bash function
+##   definitions, if/then/fi blocks, and prefix-based namespace calls.
+##
+##   # Syntax Patterns
+##   @namespace identifier. { ... }
+##     Opens a lexical scoping block. Sets _namespace and _import_prefix_
+##     to identifier. All unprefixed identifiers inside the block
+##     resolve through this namespace. Closes with }.
+##     Maps: syntaxM keyword indent2 identifier indent3 syntax3
+##   @command name [arg1, arg2] { ... }
+##     Declares a CLI task. Maps to task.name().
+##     Generates: local arg1="'$1'" ; shift
+##     Maps: keyword, indent, identifier, args, syntax, indent4, syntax3
+##   @syntax args;
+##     Matches @-prefixed rules (e.g., @prefix, @namespace). Routes
+##     to .action.<rule_name>() callbacks. Maps: syntaxM, rule, indent, args
+##   prefixed.id [args];
+##     Any line matching prefix:identifier resolves through $_import_prefix_
+##     or _namespace. Maps: prefix, identifier, args
+##   if condition { ... }
+##     Built-in if statement. Resolves prefix:condition, then
+##     compiles to if <resolved condition> ; then ... fi
+##     Maps: keyword indent2 prefix identifier indent4, args, syntax3
+##
+##   # Block Tracking
+##   All blocks maintain an internal stack in _block_type[].
+##   When entering a block, the type is pushed; when exiting,
+##   the block-specific (or generic) .end.plan is called.
 nux.nuxsh.language.def() {
   local identifier='[^ ;{}=()$]+'
   local comment='(( *)(#.*))?'
@@ -231,8 +264,14 @@ nux.nuxsh.language.def() {
   }
 }
 
+## nux.nuxsh.use:: <source_file> [<cached_file>]
+##   Main entry point for compiling a nuxsh source file. Calls
+##   nux.dsl.exec to compile the file using the nuxsh language
+##   definition. The cached file defaults to source_file.nuxr.nuxsh.
+##   If compilation is successful, sources the output immediately.
+##   Example: nux.nuxsh.use "bin/taskie" "cache/bin/taskie.nuxsh"
 function nux.nuxsh.use {
-	local file="$1";
+  local file="$1";
   local cached="$2";
-	nux.dsl.exec nux.nuxsh.language.def "$file" "$cached"
+  nux.dsl.exec nux.nuxsh.language.def "$file" "$cached"
 }
