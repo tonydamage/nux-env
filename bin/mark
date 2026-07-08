@@ -18,6 +18,15 @@ MARK_PREFIX=""
 ## them with relative paths.
 ##
 ## #Available tasks:
+
+##   init::
+##     Initializes marking system in current directory
+@command init {
+  mkdir .by
+  ln -sf .by by
+}
+
+
 ##   tag:: <task> <task arguments...>
 ##     Performs specified task in tag namespace (marks prefixed with **tag/**)
 @command tag task {
