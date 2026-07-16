@@ -88,6 +88,14 @@ MARK_PREFIX=""
     done;
     )
 }
+
+##   list-marked:: <mark>
+##     Lists marked files relative to PWD
+@command list-marked mark {
+  mark_root=$(mark.dir $pwd)
+  find "${mark_root}/${mark}" -type l -print0 -exec test -f {} \; | xargs -0 -n1 realpath --relative-to=. 2>/dev/null
+}
+
 ##   mark-to-target:: mark target [suffix]
 ##     Moves non-symlinks to *target* and creates symlinks in mark folder
 ##     This also applies to submarks
@@ -149,15 +157,15 @@ MARK_PREFIX=""
 @command unmarked mark {
   mark_root=$(mark.dir $pwd)
   nux.log debug $(mark.dir $pwd) $mark_root;
+  tmp_file=$(mktemp)
+  task.list-marked $mark > $tmp_file
   for path in "$@"; do
     nux.log debug "Checking file $path";
-    name=${path##*/};
-    marks="$(mark.marks-for-path "$mark_root" "$mark" "$path")"
-      nux.log debug "$path has '$marks'";
-    if [ -z "$marks" ]; then
+    if ! grep -q "$path" $tmp_file; then
       echo $path;
     fi
   done
+  rm $tmp_file
 
 }
 
